@@ -1,12 +1,15 @@
 class Product < ApplicationRecord
-  # Validaciones
-  validates :nombre, presence: true
-  validates :descripcion, presence: true
-  validates :precio_unitario, presence: true, numericality: { greater_than: 0 }
-  validates :stock_disponible, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :categoria, presence: true
-  validates :fecha_ingreso, presence: true
+  # Validations
+  validates :name, presence: true
+  validates :description, presence: true
+  validates :unit_price, presence: true, numericality: { greater_than: 0 }
+  validates :available_stock, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :entry_date, presence: true
 
-  # Asociaciones (si tienes un modelo Imagen)
-  has_many_attached :imagenes # Para Active Storage
+  # Associations (if you have an Image model)
+  has_many_attached :images do |attachable|
+    attachable.variant :thumb, resize: "350x350"
+  end
+  
+  belongs_to :category
 end
