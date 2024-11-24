@@ -32,8 +32,7 @@ gem "solid_cable"
 gem "bootsnap", require: false
 
 # Filtering and searching gems
-gem 'searchkick', '~> 5.3', '>= 5.3.1'
-gem 'elasticsearch', '~> 8.16'
+gem 'ransack', '~> 4.0'
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false

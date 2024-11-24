@@ -7,12 +7,14 @@
         <h1>Productos</h1>
         <div class="general-container">
             <div class="products-filters">
-                <h2>Filtros</h2>
-                <ul>
-                    <li><label><input type="checkbox"> Oportunidades (40% OFF)</label></li>
-                    <li><label><input type="checkbox"> Categorías</label></li>
-                    <li><label><input type="checkbox"> Talle</label></li>
-                </ul>
+            <h2>Filtros</h2>
+            <%= search_form_for @q, url: search_path do |f| %>
+                <div class="field">
+                <%= f.label :name_cont, "Nombre contiene" %>
+                <%= f.search_field :name_cont, class: 'form-control' %>
+                </div>
+                <%= f.submit "Buscar", class: 'btn btn-primary' %>
+            <% end %>
             </div>
             <div class="products-container">
                 <ul class="products-list">
