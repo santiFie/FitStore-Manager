@@ -1,0 +1,88 @@
+<h1>Nuevo Producto</h1>
+
+<%= link_to "Volver", :back %>
+
+
+<%= form_with model: @product, local: true do |form| %>
+    <% if @product.errors.any? %>
+        <div id="error_explanation">
+            <ul>
+                <% @product.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                <% end %>
+            </ul>
+        </div>
+    <% end %>
+
+    <div class="field">
+        <%= form.label :name, "Nombre" %>
+        <%= form.text_field :name %>
+    </div>
+
+    <div class="field">
+        <%= form.label :description, "Descripción" %>
+        <%= form.text_area :description %>
+    </div>
+
+    <%= form.label :unit_price, "Precio por unidad" %>
+        <%= form.number_field :unit_price, step: 0.01 %>
+    </div>
+
+    <div class="field">
+        <%= form.label :available_stock, "Stock disponible" %>
+        <%= form.number_field :available_stock %>
+    </div>
+
+    <div class="field">
+        <%= form.label :category_id, "Categoría" %>
+        <%= form.collection_select :category_id, Category.all, :id, :name %>
+    </div>
+
+    <div class="field">
+        <%= form.label :images, "Imágenes" %>
+        <div id="file-inputs">
+            <%= form.file_field :images, name: "product[images][]", id: "image_1" %>
+        </div>
+        <button type="button" id="add-file-input" disabled>Agregar otra imagen</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let fileInputCount = 1;
+            const maxFiles = 5;
+            const fileInputsContainer = document.getElementById("file-inputs");
+            const addFileInputButton = document.getElementById("add-file-input");
+
+            fileInputsContainer.addEventListener("change", function(event) {
+                if (event.target && event.target.matches("input[type='file']")) {
+                    if (event.target.files.length > 0) {
+                        addFileInputButton.disabled = false;
+                    }
+                }
+            });
+
+            addFileInputButton.addEventListener("click", function() {
+                if (fileInputCount < maxFiles) {
+                    fileInputCount++;
+                    const newFileInput = document.createElement("input");
+                    newFileInput.type = "file";
+                    newFileInput.name = "product[images][]";
+                    newFileInput.id = `image_${fileInputCount}`;
+                    fileInputsContainer.appendChild(newFileInput);
+
+                    if (fileInputCount === maxFiles) {
+                        addFileInputButton.disabled = true;
+                    } else {
+                        addFileInputButton.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+
+    <div class="actions">
+        <%= form.submit %>
+    </div>
+
+
+<% end %>

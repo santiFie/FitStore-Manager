@@ -1,0 +1,41 @@
+<h1><%= @product.name %></h1>
+
+<p>
+    <strong>Price:</strong>
+    <%= number_to_currency(@product.unit_price) %>
+</p>
+
+<p>
+    <strong>Description:</strong>
+    <%= @product.description %>
+</p>
+
+<p>
+    <strong>Category:</strong>
+    <%= @product.category.name %>
+</p>
+
+<p>
+    <strong>Stock:</strong>
+    <%= @product.available_stock %>
+</p>
+
+<p>
+    <strong>Created At:</strong>
+    <%= @product.entry_date %>
+</p>
+
+<p>
+    <strong>Updated At:</strong>
+    <%= @product.updated_at %>
+</p>
+
+<% if @product.images.attached? %>
+  <h3>Images:</h3>
+  <% @product.images.each do |image| %>
+    <%= image_tag image.variant(:thumb) %>
+  <% end %>
+<% end %>
+
+<%= link_to 'Edit', edit_product_path(@product) %> |
+<%= link_to 'Back', products_path %>

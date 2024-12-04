@@ -1,0 +1,130 @@
+<h1>Editar Producto</h1>
+
+<%= link_to "Volver", :back %>
+
+
+<%= form_with model: @product, local: true do |form| %>
+    <% if @product.errors.any? %>
+        <div id="error_explanation">
+            <ul>
+                <% @product.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                <% end %>
+            </ul>
+        </div>
+    <% end %>
+
+    <div class="field">
+        <%= form.label :name, "Nombre" %>
+        <%= form.text_field :name %>
+    </div>
+
+    <div class="field">
+        <%= form.label :description, "Descripción" %>
+        <%= form.text_area :description %>
+    </div>
+
+    <div class="field">
+        <%= form.label :unit_price, "Precio por unidad" %>
+        <%= form.number_field :unit_price, step: 0.01 %>
+    </div>
+
+    <div class="field">
+        <%= form.label :available_stock, "Stock disponible" %>
+        <%= form.number_field :available_stock %>
+    </div>
+
+    <div class="field">
+        <%= form.label :category_id, "Categoría" %>
+        <%= form.collection_select :category_id, Category.all, :id, :name %>
+    </div>
+
+    <%= hidden_field_tag "product[images_to_delete]", "", id: "images-to-delete" %>
+
+    <div class="field">
+        <%= form.label :images, "Imágenes" %>
+        <div id="existing-images">
+            <% @product.images.each do |image| %>
+                <div id="image_<%= image.id %>" class="image-preview">
+                    <%= image_tag image, class: 'product-image' %>
+                    <%= image_tag image.variant(resize_to_limit: [100, 100]), class: 'product-image' %>
+                    <%= link_to "Eliminar", "#", class: 'delete-image-btn', data: { image_id: image.id } %>
+                </div>
+            <% end %>
+        </div>
+
+        <div id="file-inputs">
+            <% if @product.images.count < 5 %>
+                <%= form.file_field :images, 
+                    name: "product[images][]", 
+                    id: "image_1", 
+                    accept: 'image/png,image/jpeg,image/jpg,image/gif' %>
+            <% end %>
+        </div>
+
+        <% if @product.images.count < 5 %>
+            <button type="button" id="add-file-input">Agregar otra imagen</button>
+        <% end %>
+    </div>
+
+    <div class="actions">
+        <%= form.submit "Actualizar Producto" %>
+    </div>
+
+    <%= link_to "Eliminar producto", product_path(@product), method: :delete , data: { turbo_method: :delete, id:@product.id }%>
+
+
+<% end %>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const maxFiles = 5;
+    const fileInputsContainer = document.getElementById("file-inputs");
+    const addFileInputButton = document.getElementById("add-file-input");
+    const existingImagesContainer = document.getElementById("existing-images");
+    const imagesToDeleteInput = document.getElementById("images-to-delete");
+
+    function updateAddButton() {
+        const currentFileInputs = fileInputsContainer.querySelectorAll('input[type="file"]').length;
+        const existingImagesCount = existingImagesContainer.querySelectorAll('.image-preview').length;
+        const totalImages = existingImagesCount + currentFileInputs;
+
+        addFileInputButton.disabled = totalImages >= maxFiles;
+    }
+
+    if (addFileInputButton) {
+        addFileInputButton.addEventListener("click", function() {
+            const newFileInput = document.createElement("input");
+            newFileInput.type = "file";
+            newFileInput.name = "product[images][]";
+            newFileInput.accept = 'image/png,image/jpeg,image/jpg,image/gif';
+            fileInputsContainer.appendChild(newFileInput);
+            updateAddButton();
+        });
+    }
+
+    existingImagesContainer.addEventListener("click", function(e) {
+        if (e.target.classList.contains("delete-image-btn")) {
+            e.preventDefault();
+            const imageDiv = e.target.closest(".image-preview");
+            const imageId = e.target.dataset.image_id;
+
+            // Marcar para eliminación
+            const imagesToDelete = imagesToDeleteInput.value.split(',').filter(Boolean);
+            if (!imagesToDelete.includes(imageId)) {
+                imagesToDelete.push(imageId);
+                imagesToDeleteInput.value = imagesToDelete.join(',');
+            }
+
+            // Eliminar visualmente
+            imageDiv.remove();
+            updateAddButton();
+        }
+    });
+
+    updateAddButton();
+});
+
+
+</script>

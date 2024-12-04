@@ -7,9 +7,11 @@ Rails.application.routes.draw do
 
   # config/routes.rb
   Rails.application.routes.draw do
-    resources :products  # Esto creará todas las rutas CRUD para products
+    resources :products do
+      delete :delete_image, on: :member
+    end
   end
-  root "home#index" # Define la raíz de la aplicación
+  root "products#index" # Define la raíz de la aplicación
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
