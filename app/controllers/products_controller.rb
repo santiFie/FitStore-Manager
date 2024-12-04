@@ -15,7 +15,7 @@ class ProductsController < ApplicationController
 
     begin
       if @product.save
-        redirect_to products_path, notice: 'Producto creado exitosamente'
+        redirect_to products_path, notice: "Producto creado exitosamente"
       else
         puts "Errores al guardar:"
         @product.errors.full_messages.each do |error|
@@ -41,8 +41,8 @@ class ProductsController < ApplicationController
   def update
     @product = Product.find(params[:id])
 
-    images_to_delete = params[:product][:images_to_delete]&.split(',') || []
-  
+    images_to_delete = params[:product][:images_to_delete]&.split(",") || []
+
     images_to_delete.each do |image_id|
       @product.images.find(image_id).purge
     end
@@ -56,7 +56,7 @@ class ProductsController < ApplicationController
     end
 
     if @product.update(product_params)
-      redirect_to products_path, notice: 'Producto actualizado exitosamente.'
+      redirect_to products_path, notice: "Producto actualizado exitosamente."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -67,9 +67,9 @@ class ProductsController < ApplicationController
   def destroy
     @product = Product.find(params[:id])
     if @product.destroy
-      redirect_to products_path, notice: 'Producto eliminado exitosamente.'
+      redirect_to products_path, notice: "Producto eliminado exitosamente."
     else
-      redirect_to products_path, alert: 'No se pudo eliminar el producto.'
+      redirect_to products_path, alert: "No se pudo eliminar el producto."
     end
   end
 
@@ -79,16 +79,16 @@ class ProductsController < ApplicationController
     @image = @product.images.find(params[:image_id])
     if @image
       @image.purge
-      redirect_to edit_product_path(@product), notice: 'Imagen eliminada exitosamente' 
+      redirect_to edit_product_path(@product), notice: "Imagen eliminada exitosamente"
     else
-      redirect_to edit_product_path(@product), alert: 'No se pudo eliminar la imagen'
+      redirect_to edit_product_path(@product), alert: "No se pudo eliminar la imagen"
     end
   rescue ActiveRecord::RecordNotFound
-    redirect_to edit_product_path(@product), alert: 'Imagen no encontrada'
+    redirect_to edit_product_path(@product), alert: "Imagen no encontrada"
   end
 
-  private 
+  private
     def product_params
       params.require(:product).permit(:name, :description, :unit_price, :available_stock, :category_id, images: [])
-    end 
+    end
 end

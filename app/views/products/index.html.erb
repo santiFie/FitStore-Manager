@@ -5,6 +5,14 @@
     </head>
     <body>
         <h1>Productos</h1>
+        <div>
+            <% if current_admin %>
+                <% link_to "Cerrar sesión", destroy_admin_session_path, 'data.turbo-method': :delete %>
+            <% else %>
+                <%= link_to "Registrarse", new_admin_registration_path %>
+                <%= link_to "Iniciar sesión", new_admin_session_path %>
+            <% end %>
+        </div>
         <div class="general-container">
             <div class="products-filters">
             <h2>Filtros</h2>
