@@ -11,7 +11,7 @@ class CreateProducts < ActiveRecord::Migration[8.0]
       t.datetime :last_modified_at
       t.datetime :deleted_at, null: true
       t.references :category, null: false, foreign_key: true # Agregar clave foránea
-      
+
       t.timestamps
     end
   end

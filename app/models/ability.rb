@@ -4,23 +4,26 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-      return unless user.present?
-      if user.admin?
-        can :manage, :all
-      end
+    can :read, Product # Allow anyone to read products
 
-      if user.supervisor?
-        can :create, Product
-        can :manage, Category
-        # can :manage, Sales
-        # can :create, User, role: !"admin"
-      end
+    return unless user.present?
+    if user.admin?
+      can :manage, :all
+    end
 
-      if user.employee?
-        can :manage, Product
-        can :manage, Category
-        # can :manage, Sales
-      end
+    if user.supervisor?
+      can :create, Product
+      can :manage, Category
+      # can :manage, Sales
+      can :create, User, role: !"admin"
+    end
+
+    if user.employee?
+      can :manage, Product
+      can :manage, Category
+      # can :manage, Sales
+    end
+  end
     # Define abilities for the user here. For example:
     #
     #   return unless user.present?
@@ -45,5 +48,4 @@ class Ability
     #
     # See the wiki for details:
     # https://github.com/CanCanCommunity/cancancan/blob/develop/docs/define_check_abilities.md
-  end
 end

@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  devise_for :employees
-  devise_for :supervisors
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -9,12 +7,13 @@ Rails.application.routes.draw do
 
   # config/routes.rb
   Rails.application.routes.draw do
-  devise_for :employees
-  devise_for :supervisors
-  devise_for :admins
-    resources :products do
-      delete :delete_image, on: :member
-    end
+    devise_for :users, skip: :registrations, controllers: { registrations: "users/registrations" }
+    resources :users
+
+    # resources :products do
+    #   delete :delete_image, on: :member
+    # end
+    resources :products
   end
   root "products#index" # Define la raíz de la aplicación
   get "up" => "rails/health#show", as: :rails_health_check

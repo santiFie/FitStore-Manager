@@ -16,12 +16,12 @@ class Product < ApplicationRecord
 
   def self.ransackable_attributes(auth_object = nil)
     # List of attributes that can be searched
-    ["name", "description", "unit_price", "available_stock", "entry_date"]
+    [ "name", "description", "unit_price", "available_stock", "entry_date" ]
   end
 
   # Allows to search by associations
   def self.ransackable_associations(auth_object = nil)
-    ["category"]
+    [ "category" ]
   end
 
   belongs_to :category
@@ -36,7 +36,7 @@ class Product < ApplicationRecord
 
     images.each do |image|
       # Validate the content type
-      unless image.blob.content_type.in?(['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'])
+      unless image.blob.content_type.in?([ "image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp" ])
         errors.add(:images, "deben ser archivos PNG, JPEG, WEBP, JPG o GIF")
       end
 
