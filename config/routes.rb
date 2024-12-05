@@ -9,8 +9,8 @@ Rails.application.routes.draw do
   Rails.application.routes.draw do
     devise_for :users, skip: :registrations, controllers: { registrations: "users/registrations", sessions: "users/sessions" }
     resources :users do
-      get :block, on: :member
-      get :unblock, on: :member
+      patch :block, on: :member
+      patch :unblock, on: :member
     end
 
     # resources :products do

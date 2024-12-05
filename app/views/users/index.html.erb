@@ -1,25 +1,37 @@
 <p style="color: green"><%= notice %></p>
 
-<% content_for :title, "Users" %>
+<% content_for :title, "Usuarios" %>
 
-<h1>Users</h1>
+<h1>Usuarios</h1>
 
 <div id="users">
   <% @users.each do |user| %>
-    <%= render user %>
+    
     <p>
-      <%= link_to "Show this user", user %>
+      <strong>Nombre de usuario:</strong> <%= user.username %>
+    </p>
+    <p>
+      <strong>Email:</strong> <%= user.email %>
+    </p>
+    <p>
+      <strong>Rol:</strong> <%= user.role %>
+    </p>
+    <p>
+      <strong>Fecha de inicio:</strong> <%= user.start_date %>
+    </p>
+    <p>
+      <strong>Teléfono:</strong> <%= user.phone %>
     </p>
     <div>
       <%= link_to "Editar", edit_user_path(user) %>
       <%= link_to "Eliminar", user, data: { turbo_method: :delete, confirm: "¿Estas seguro?" } %>
       <% if !user.blocked? %>
-        <%= link_to "Bloquear", block_user_path(user) %>
+        <%= link_to "Bloquear", block_user_path(user), data: { turbo_method: :patch } %>
       <% else %>
-        <%= link_to "Desbloquear", unblock_user_path(user) %>
+        <%= link_to "Desbloquear", unblock_user_path(user), data: { turbo_method: :patch } %>
       <% end %>
     </div>
   <% end %>
 </div>
 
-<%= link_to "New user", new_user_path %>
+<%= link_to "Nuevo usuario", new_user_path %>

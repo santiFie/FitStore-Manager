@@ -1,10 +1,31 @@
 <p style="color: green"><%= notice %></p>
 
-<%= render @user %>
-
 <div>
-  <%= link_to "Edit this user", edit_user_path(@user) %> |
-  <%= link_to "Back to users", users_path %>
+  <p>
+    <strong>Nombre de usuario:</strong>
+    <%= @user.username %>
+  </p>
+  <p>
+    <strong>Email:</strong>
+    <%= @user.email %>
+  </p>
 
-  <%= button_to "Destroy this user", @user, method: :delete %>
+  <p>
+    <strong>Rol:</strong>
+    <%= @user.role %>
+  </p>
+
+  <p>
+    <strong>Fecha de inicio:</strong>
+    <%= @user.start_date %>
+  </p>
+
+  <p>
+    <strong>Teléfono:</strong>
+    <%= @user.phone %>
+  </p>
+
+  <%= link_to "Editar usuario", edit_user_path(@user) %> |
+  <%= link_to "Volver", users_path %>
+
 </div>

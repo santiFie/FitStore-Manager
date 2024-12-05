@@ -1,12 +1,42 @@
-<% content_for :title, "Editing user" %>
+<% content_for :title, "Editar usuario" %>
 
-<h1>Editing user</h1>
+<h1>Editar usuario</h1>
 
-<%= render "form", user: @user %>
+  <p>
+    <strong>Nombre de usuario:</strong>
+    <%= @user.username %>
+  </p>
+  <p>
+    <strong>Email:</strong>
+    <%= @user.email %>
+  </p>
+
+  <p>
+    <strong>Rol:</strong>
+    <%= @user.role %>
+  </p>
+
+  <p>
+    <strong>Fecha de inicio:</strong>
+    <%= @user.start_date %>
+  </p>
+
+  <p>
+    <strong>Teléfono:</strong>
+    <%= @user.phone %>
+  </p>
 
 <br>
 
 <div>
   <%= link_to "Show this user", @user %> |
   <%= link_to "Back to users", users_path %>
+
+
+  <%= button_to "Eliminar usuario", @user, data: { turbo_method: :delete } %>
+  <% if @user.blocked? %>
+    <%= link_to "Bloquear usuario", block_user_path(@user), data: { turbo_method: :patch } %>
+  <% else %>
+    <%= link_to "Desbloquear usuario", unblock_user_path(@user), data: { turbo_method: :patch } %>
+  <% end %>
 </div>
