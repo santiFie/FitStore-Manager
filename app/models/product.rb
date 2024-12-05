@@ -16,7 +16,7 @@ class Product < ApplicationRecord
 
   def self.ransackable_attributes(auth_object = nil)
     # List of attributes that can be searched
-    [ "name", "description", "unit_price", "available_stock", "entry_date" ]
+    [ "name", "description", "unit_price", "available_stock", "entry_date", "category_id" ]
   end
 
   # Allows to search by associations
