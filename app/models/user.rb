@@ -12,6 +12,22 @@ class User < ApplicationRecord
     self.role ||= :employee
   end
 
+  def blocked?
+    self.blocked
+  end
+
+  def block
+    self.blocked = true
+    self.password = Devise.friendly_token(8)
+    self.save
+  end
+
+  def unblock
+    self.blocked = false
+    self.password = "password"
+    self.save
+  end
+
   # Validations
   validates :username, presence: true, uniqueness: true
   validates :email, presence: true, uniqueness: true

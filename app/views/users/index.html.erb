@@ -10,6 +10,15 @@
     <p>
       <%= link_to "Show this user", user %>
     </p>
+    <div>
+      <%= link_to "Editar", edit_user_path(user) %>
+      <%= link_to "Eliminar", user, data: { turbo_method: :delete, confirm: "¿Estas seguro?" } %>
+      <% if !user.blocked? %>
+        <%= link_to "Bloquear", block_user_path(user) %>
+      <% else %>
+        <%= link_to "Desbloquear", unblock_user_path(user) %>
+      <% end %>
+    </div>
   <% end %>
 </div>
 

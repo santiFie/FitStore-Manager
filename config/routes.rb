@@ -7,8 +7,11 @@ Rails.application.routes.draw do
 
   # config/routes.rb
   Rails.application.routes.draw do
-    devise_for :users, skip: :registrations, controllers: { registrations: "users/registrations" }
-    resources :users
+    devise_for :users, skip: :registrations, controllers: { registrations: "users/registrations", sessions: "users/sessions" }
+    resources :users do
+      get :block, on: :member
+      get :unblock, on: :member
+    end
 
     # resources :products do
     #   delete :delete_image, on: :member
