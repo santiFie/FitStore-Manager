@@ -4,10 +4,9 @@ class SaleItem < ApplicationRecord
 
   before_save :calculate_subtotal
 
-  def calculate_subtotal
-    self.subtotal = quantity * unit_price
-  end
-
   validates :quantity, presence: true, numericality: { greater_than: 0 }
-  validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+
+  def calculate_subtotal
+    self.subtotal = quantity * product.unit_price if quantity.present? && product.present?
+  end
 end

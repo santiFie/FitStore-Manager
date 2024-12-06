@@ -6,10 +6,11 @@
 
 <div id="sales">
   <% @sales.each do |sale| %>
-    <%= render sale %>
-    <p>
-      <%= link_to "Ver venta", sale %>
-    </p>
+    <h3> Cliente: <%= sale.client.first_name %> <%= sale.client.last_name %> </h3>
+    <h3> Total: <%= sale.total %> </h3>
+  
+    <%= link_to "Editar venta", edit_sale_path(sale) %>
+    <%= link_to "Eliminar venta", sale_path(sale), data: { turbo_method: :delete, confirm: "¿Estás seguro?" } %>
   <% end %>
 </div>
 

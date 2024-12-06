@@ -24,13 +24,25 @@ class SalesController < ApplicationController
   # POST /sales or /sales.json
   def create
     @sale = Sale.new(sale_params)
-    @sale.employee_id = current_user.id
 
-    debugger.log(sale_params)
+    begin
+      ActiveRecord::Base.transaction do
+        Rails.logger.info("Creating sale...")
+        Rails.logger.info("Este es el usuario current #{current_user.inspect}")
 
-    if @sale.save
+        @client = Client.find_or_create_by!(sale_params[:client_attributes])
+        Rails.logger.info("Client created")
+        Rails.logger.info(@client.inspect)
+
+        @sale.user = current_user
+        @sale.client_id = @client.id
+
+        @sale.save!
+
         redirect_to @sale, notice: "Sale was successfully created."
-    else
+      end
+    rescue
+      flash.now[:alert] = "Hubo un error al crear la venta."
       render :new, status: :unprocessable_entity
     end
   end
@@ -60,9 +72,8 @@ class SalesController < ApplicationController
       params.require(:sale).permit(
         :sale_date,
         :total,
-        :sale_items,
         client_attributes: [ :first_name, :last_name, :email, :phone, :dni, :birth_date ],
-        sale_items_attributes: [ :product_id, :quantity, :unit_price, :subtotal ]
+        sale_items_attributes: [ :product_id, :quantity, :subtotal ]
       )
     end
 end

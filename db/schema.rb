@@ -77,7 +77,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_05_191829) do
     t.integer "sale_id", null: false
     t.integer "product_id", null: false
     t.integer "quantity", null: false
-    t.decimal "price", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "subtotal", default: "0.0", null: false
