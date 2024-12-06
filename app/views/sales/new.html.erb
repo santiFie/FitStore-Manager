@@ -1,3 +1,127 @@
+<%= form_with model: @sale, local: true do |sale_form| %>
+    <!-- hidden fields to store sale items -->
+    <input type="hidden" name="sale[sale_items]" id="sale_items">
+    <% if @sale.errors.any? %>
+        <div id="error_explanation">
+            <ul>
+                <% @sale.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                <% end %>
+            </ul>
+        </div>
+    <% end %>
+
+    <h2>Datos del Cliente</h2>
+    <%= sale_form.fields_for :client do |client_form| %>
+        <div class="field">
+            <%= client_form.label :dni, "DNI" %>
+            <%= client_form.text_field :dni %>
+        </div>
+
+        <div class="field">
+            <%= client_form.label :first_name, "Nombre del cliente" %>
+            <%= client_form.text_field :first_name %>
+        </div>
+
+        <div class="field">
+            <%= client_form.label :last_name, "Apellido del cliente" %>
+            <%= client_form.text_field :last_name %>
+        </div>
+
+        <div class="field">
+            <%= client_form.label :email, "Correo electrónico" %>
+            <%= client_form.email_field :email %>
+        </div>
+
+        <div class="field">
+            <%= client_form.label :birth_date, "Fecha de nacimiento" %>
+            <%= client_form.date_field :birth_date %>
+        </div>
+    <% end %>
+
+    <h2>Producto</h2>
+
+
+
+    <%= sale_form.fields_for :sale_items, html: { id: "sale-item-form" } do |sale_item_form| %>
+        <div id="sale-item-form">
+            <%= sale_item_form.label :product_id, "Producto" %>
+            <%= sale_item_form.text_field :product_id, 
+                list: "product_list", 
+                placeholder: "Selecciona un producto" %>
+            
+            <datalist id="product_list">
+                <% Product.all.each do |product| %>
+                    <option data="<%= product.id %>" data-price="<%= product.unit_price %>">
+                        <%= product.name %> - $<%= product.unit_price %>
+                    </option>
+                <% end %>
+            </datalist>
+
+            <div class="field">
+                <%= sale_item_form.label :quantity, "Cantidad" %>
+                <%= sale_item_form.number_field :quantity, min: 1 %>
+            </div>
+
+            <div>
+                <div class="field">
+                    <%= sale_item_form.label :subtotal, "Subtotal" %>
+                    <%= sale_item_form.text_field :subtotal, readonly: true, value: 0 %>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" class="add-item">Agregar producto</button>
+            </div>
+        </div>
+    <% end %>
+
+    
+
+    <h2>Total de la venta</h2>
+
+
+    <ul id="added_products">
+        
+    </ul>
+
+    <p class="no-items" id="no-products">No se han agregado productos</p>
+
+
+
+    <div>
+        <div class="field">
+            <%= sale_form.label :total, "Total" %>
+            <%= sale_form.text_field :total, readonly: true, value: 0 %>
+        </div>
+    </div>
+
+    <div class="field">
+        <%= sale_form.label :sale_date, "Fecha de venta" %>
+        <%= sale_form.date_field :sale_date %>
+    </div>
+
+    <div class="actions">
+        <%= sale_form.submit "Guardar Venta" %>
+    </div>
+<% end %>
+
+<%= link_to "Volver", sales_path %>
+
+<style>
+
+    .product-select {
+        width: 100%; /* Ancho completo */
+        max-height: 200px; /* Altura máxima */
+        overflow-y: auto; /* Scroll vertical cuando sea necesario */
+    }
+
+    .delete-items {
+        color: black;
+    }
+
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Selección de elementos del DOM
@@ -7,6 +131,9 @@
         const subtotalInput = document.querySelector('input[name*="[subtotal]"]');
         const addSaleItemButton = document.querySelector('button.add-item');
         const addedProductsList = document.getElementById('added_products');
+        const saleForm = document.getElementById('sale-item-form')
+
+        console.log(document.getElementById('sale-item-form'));
 
         // Función para actualizar subtotal
         function updateSubtotal() {
@@ -22,12 +149,14 @@
 
         // Función para actualizar total de la venta
         function updateTotal() {
-            const subtotalInputs = document.querySelectorAll('input[name*="[subtotal]"]');
+            // const subtotalInputs = document.querySelectorAll('input[name*="[subtotal]"]');
+            const subtotalInputs = Array.from(addedProductsList.children)
+                .map(li => parseFloat(li.dataset.subtotal));
             const totalInput = document.querySelector('input[name="sale[total]"]');
             
             let total = 0;
             subtotalInputs.forEach(input => {
-                total += parseFloat(input.value) || 0;
+                total += parseFloat(input) || 0;
             });
             
             totalInput.value = total.toFixed(2);
@@ -40,6 +169,7 @@
         // Evento para botón de agregar producto
         addSaleItemButton.addEventListener('click', function(event) {
             event.preventDefault();
+
 
             // Obtener datos del producto seleccionado
             const selectedOption = Array.from(productList.options)
@@ -73,6 +203,32 @@
                     // Si el producto no existe, crear un nuevo elemento
                     const listItem = document.createElement('li');
                     listItem.textContent = `${productName} - Cantidad: ${quantity} - Subtotal: $${subtotal.toFixed(2)}`;
+
+                    // Crear botón de eliminar
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Eliminar';
+                    deleteButton.classList.add('delete-item');
+
+                    // Añadir evento al botón de eliminar
+                    deleteButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        listItem.remove();
+
+                        // Actualizar total
+                        updateTotal();
+
+                        // Mostrar mensaje de no productos si no hay elementos
+                        if (addedProductsList.children.length === 0) {
+                            const noProductsMessage = document.createElement('p');
+                            noProductsMessage.textContent = 'No se han agregado productos';
+                            noProductsMessage.classList.add('no-items');
+                            noProductsMessage.id = 'no-products';
+                            addedProductsList.appendChild(noProductsMessage);
+                        }
+                    });
+
+                    // Añadir botón de eliminar al elemento de la lista
+                    listItem.appendChild(deleteButton);
                     
                     // Añadir data attributes para identificación y seguimiento
                     listItem.dataset.productId = productId;
@@ -95,125 +251,24 @@
                 if (noProductsMessage) {
                     noProductsMessage.remove();
                 }
+
             }
+        });
+
+        saleForm.addEventListener('submit', function(event) {
+            const saleItemsInput = document.getElementById('sale_items');
+            const saleItemsArray = Array.from(addedProductsList.children).map(li => ({
+                product_id: li.dataset.productId,
+                quantity: li.dataset.quantity,
+                subtotal: li.dataset.subtotal,
+            }));
+
+            saleItemsInput.value = JSON.stringify(saleItemsArray);
         });
 
         // Actualizar total inicialmente
         updateTotal();
     });
+
+    
 </script>
-
-<%= form_with model: @sale, local: true do |sale_form| %>
-    <% if @sale.errors.any? %>
-        <div id="error_explanation">
-            <ul>
-                <% @sale.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
-                <% end %>
-            </ul>
-        </div>
-    <% end %>
-
-    <h2>Datos del Cliente</h2>
-    <%= sale_form.fields_for :client do |client_form| %>
-        <div class="field">
-            <%= client_form.label :first_name, "Nombre del cliente" %>
-            <%= client_form.text_field :first_name %>
-        </div>
-
-        <div class="field">
-            <%= client_form.label :last_name, "Apellido del cliente" %>
-            <%= client_form.text_field :last_name %>
-        </div>
-
-        <div class="field">
-            <%= client_form.label :email, "Correo electrónico" %>
-            <%= client_form.email_field :email %>
-        </div>
-
-        <div class="field">
-            <%= client_form.label :birth_date, "Fecha de nacimiento" %>
-            <%= client_form.date_field :birth_date %>
-        </div>
-    <% end %>
-
-    <h2>Producto</h2>
-    <%= sale_form.fields_for :sale_items do |sale_item_form| %>
-        <div class="sale-item-fields">
-
-            <%= sale_item_form.label :product_id, "Producto" %>
-            <%= sale_item_form.text_field :product_id, 
-                list: "product_list", 
-                placeholder: "Selecciona un producto" %>
-            
-            <datalist id="product_list">
-                <% Product.all.each do |product| %>
-                    <option data="<%= product.id %>" data-price="<%= product.unit_price %>">
-                        <%= product.name %> - $<%= product.unit_price %>
-                    </option>
-                <% end %>
-            </datalist>
-
-            <div class="field">
-                <%= sale_item_form.label :quantity, "Cantidad" %>
-                <%= sale_item_form.number_field :quantity, min: 1 %>
-            </div>
-
-            <div>
-                <div class="field">
-                    <%= sale_item_form.label :subtotal, "Subtotal" %>
-                    <%= sale_item_form.text_field :subtotal, readonly: true, value: 0 %>
-                </div>
-            </div>
-
-            <div>
-                <button type="button" class="add-item">Agregar producto</button>
-            </div>
-
-        </div>
-    <% end %>
-
-    <h2>Total de la venta</h2>
-    <ul id="added_products">
-        <% if @sale.sale_items.count > 0 %>
-            <% @sale.sale_items.each do |item| %>
-                <li data-product-id="<%= item.product_id %>" 
-                    data-quantity="<%= item.quantity %>" 
-                    data-subtotal="<%= item.subtotal %>">
-                    <%= item.product_id ? Product.find(item.product_id).name : 'Producto no encontrado' %> - Cantidad: <%= item.quantity %> - Subtotal: $<%= item.subtotal %>
-                </li>
-            <% end %>
-        <% else %>
-            <p class="no-items" id="no-products">No se han agregado productos</p>
-        <% end %>
-    </ul>
-
-    <div>
-        <div class="field">
-            <%= sale_form.label :total, "Total" %>
-            <%= sale_form.text_field :total, readonly: true, value: 0 %>
-        </div>
-
-    </div>
-
-    <div class="field">
-        <%= sale_form.label :sale_date, "Fecha de venta" %>
-        <%= sale_form.date_field :sale_date %>
-    </div>
-
-    <div class="actions">
-        <%= sale_form.submit "Guardar Venta" %>
-    </div>
-<% end %>
-
-<%= link_to "Volver", sales_path %>
-
-<style>
-
-    .product-select {
-        width: 100%; /* Ancho completo */
-        max-height: 200px; /* Altura máxima */
-        overflow-y: auto; /* Scroll vertical cuando sea necesario */
-    }
-
-</style>

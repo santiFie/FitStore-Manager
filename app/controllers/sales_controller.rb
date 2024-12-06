@@ -24,39 +24,30 @@ class SalesController < ApplicationController
   # POST /sales or /sales.json
   def create
     @sale = Sale.new(sale_params)
+    @sale.employee_id = current_user.id
 
-    respond_to do |format|
-      if @sale.save
-        format.html { redirect_to @sale, notice: "Sale was successfully created." }
-        format.json { render :show, status: :created, location: @sale }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @sale.errors, status: :unprocessable_entity }
-      end
+    debugger.log(sale_params)
+
+    if @sale.save
+        redirect_to @sale, notice: "Sale was successfully created."
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
   # PATCH/PUT /sales/1 or /sales/1.json
   def update
-    respond_to do |format|
-      if @sale.update(sale_params)
-        format.html { redirect_to @sale, notice: "Sale was successfully updated." }
-        format.json { render :show, status: :ok, location: @sale }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @sale.errors, status: :unprocessable_entity }
-      end
+    if @sale.update(sale_params)
+      redirect_to @sale, notice: "Sale was successfully updated."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
   # DELETE /sales/1 or /sales/1.json
   def destroy
     @sale.destroy!
-
-    respond_to do |format|
-      format.html { redirect_to sales_path, status: :see_other, notice: "Sale was successfully destroyed." }
-      format.json { head :no_content }
-    end
+    redirect_to sales_path, status: :see_other, notice: "Sale was successfully destroyed."
   end
 
   private
@@ -68,7 +59,9 @@ class SalesController < ApplicationController
     def sale_params
       params.require(:sale).permit(
         :sale_date,
-        client_attributes: [ :customer_name, :customer_email, :customer_phone, :customer_address ],
+        :total,
+        :sale_items,
+        client_attributes: [ :first_name, :last_name, :email, :phone, :dni, :birth_date ],
         sale_items_attributes: [ :product_id, :quantity, :unit_price, :subtotal ]
       )
     end
