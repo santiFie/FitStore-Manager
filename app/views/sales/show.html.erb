@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @sale %>
+
+<div>
+  <%= link_to "Editar venta", edit_sale_path(@sale) %> |
+  <%= link_to "Volver", sales_path %>
+
+  <%= button_to "Eliminar venta", @sale, method: :delete %>
+</div>

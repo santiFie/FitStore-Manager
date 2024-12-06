@@ -67,3 +67,4 @@ end
 
 gem "devise", "~> 4.9"
 gem "cancancan", "~> 3.1"
+gem "minitest", "~> 5.14"
