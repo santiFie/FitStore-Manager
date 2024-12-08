@@ -29,8 +29,8 @@ class User < ApplicationRecord
   end
 
   # Validations
-  validates :username, presence: true, uniqueness: true
-  validates :email, presence: true, uniqueness: true
+  validates :username, presence: true, uniqueness: { message: "ya ha sido tomado" }
+  validates :email, presence: true, uniqueness: { message: "ya ha sido tomado" }
   validates :role, presence: true
   validates :start_date, presence: true
   validates :phone, presence: true

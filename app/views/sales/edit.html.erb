@@ -1,11 +1,395 @@
-<% content_for :title, "Editar venta" %>
+<%= form_with(model: @sale, local: true) do |sale_form| %>
+    
+    <% if @sale.errors.any? %>
+      <div id="error_explanation">
+        <h2><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
+        <ul>
+          <% @sale.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
-<h1>Editar venta</h1>
+    <h2>Datos del Cliente</h2>
+    <%= sale_form.fields_for :client do |client_form| %>
+        <div class="field" >
+            <%= client_form.label :dni, "DNI" %>
+            <%= client_form.text_field :dni, readonly: true, value: @sale.client.dni, disabled: true %>
+        </div>
 
-<%= render "form", sale: @sale %>
+        <div class="field">
+            <%= client_form.label :first_name, "Nombre del cliente" %>
+            <%= client_form.text_field :first_name, value: @sale.client.first_name %>
+        </div>
 
-<br>
+        <div class="field">
+            <%= client_form.label :last_name, "Apellido del cliente" %>
+            <%= client_form.text_field :last_name, value: @sale.client.last_name %>
+        </div>
 
-<div>
-  <%= link_to "Volver", sales_path %>
-</div>
+        <div class="field">
+            <%= client_form.label :email, "Correo electrónico" %>
+            <%= client_form.email_field :email, value: @sale.client.email %>
+        </div>
+
+        <div class="field">
+            <%= client_form.label :birth_date, "Fecha de nacimiento" %>
+            <%= client_form.date_field :birth_date, value: @sale.client.birth_date %>
+        </div>
+    <% end %>
+
+    <br>
+
+    <div id="sale-items">
+    <%= sale_form.fields_for :sale_items do |sale_item_form| %>
+        <div id="sale-item-form">
+        <%= sale_item_form.label :product_id, "Producto" %>
+        <%= sale_item_form.text_field :product_id, 
+            list: "product_list", 
+            placeholder: "Selecciona un producto", value: "" %>
+        
+        <datalist id="product_list">
+            <% Product.all.each do |product| %>
+            <option data="<%= product.id %>" data-price="<%= product.unit_price %>">
+                <%= product.name %>
+            </option>
+            <% end %>
+        </datalist>
+
+        <div class="field">
+            <%= sale_item_form.label :quantity, "Cantidad" %>
+            <%= sale_item_form.number_field :quantity, min: 1, value: 1 %>
+        </div>
+
+        <div class="field">
+            <%= sale_item_form.label :subtotal, "Subtotal" %>
+            <%= sale_item_form.text_field :subtotal, readonly: true, value: 0 %>
+        </div>
+
+        <button type="button" class="add-item">Agregar producto</button>
+        </div>
+    <% end %>
+
+    <div class="table-container">
+        <table class="items-table">
+        <thead>
+            <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+            <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="added_products">
+            <% if @sale.sale_items.any? %>
+                <% @sale.sale_items.each_with_index do |sale_item, index| %>
+                    <tr data-item-id="<%= index %>">
+                        <td>
+                            <%= sale_item.product.name %>
+                            <%= sale_form.fields_for :sale_items, sale_item do |existing_item_form| %>
+                                <%= existing_item_form.hidden_field :id %>
+                                <%= existing_item_form.hidden_field :product_id, value: sale_item.product_id %>
+                                <%= existing_item_form.hidden_field :quantity, value: sale_item.quantity %>
+                                <%= existing_item_form.hidden_field :subtotal, value: sale_item.subtotal %>
+                            <% end %>
+                        </td>
+                        <td class="text-center"><%= sale_item.quantity %></td>
+                        <td class="text-right"><%= number_to_currency(sale_item.product.unit_price) %></td>
+                        <td class="text-right" data-subtotal="<%= sale_item.subtotal %>"><%= number_to_currency(sale_item.subtotal) %></td>
+                        <td class="text-center">
+                            <button type="button" class="delete-button">Eliminar</button>
+                        </td>
+                    </tr>
+                <% end %>
+            <% else %>
+                <tr id="no-products">
+                    <td colspan="5" class="text-center">No se han agregado productos</td>
+                </tr>
+            <% end %>
+        </tbody>
+        <tfoot>
+            <tr>
+            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+            <td colspan="2">
+                <%= sale_form.number_field :total, readonly: true, class: 'total-input', value: @sale.total %>
+            </td>
+            </tr>
+        </tfoot>
+        </table>
+    </div>
+    </div>
+
+    <br>
+
+    <h2>Datos de la Venta</h2>
+    <div class="field">
+        <%= sale_form.label :sale_date, "Fecha de la venta" %>
+        <%= sale_form.date_field :sale_date, value: @sale.sale_date %>
+    </div>
+
+    <div class="form-actions">
+    <%= sale_form.submit "Actualizar Venta", class: 'submit-button' %>
+    </div>
+<% end %>
+
+<%= link_to "Volver", sales_path %>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variable para llevar el conteo de IDs únicos
+        let uniqueIdCounter = 0;
+
+        // Función para generar un ID único incremental
+        function generateUniqueId() {
+            return uniqueIdCounter++;
+        }
+
+        // Selección de elementos del DOM
+        const productList = document.getElementById('product_list');
+        const productInput = document.querySelector('input[list="product_list"]');
+        const quantityInput = document.querySelector('input[name*="[quantity]"]');
+        const subtotalInput = document.querySelector('input[name*="[subtotal]"]');
+        const addSaleItemButton = document.querySelector('button.add-item');
+        const addedProductsTable = document.getElementById('added_products');
+        const saleForm = document.querySelector('form');
+
+        // New function to add existing sale items
+        function addExistingSaleItems() {
+            // const addedProductsTable = document.getElementById('added_products');
+            const existingRows = addedProductsTable.querySelectorAll('tr[data-item-id]');
+            
+            // Remove the "no products" row if it exists
+            const noProductsRow = document.getElementById('no-products');
+            if (noProductsRow) {
+                noProductsRow.remove();
+            }
+
+            // Process each existing row
+            existingRows.forEach(row => {
+                // Add delete button functionality to existing rows
+                const deleteButton = row.querySelector('.delete-button');
+                deleteButton.addEventListener('click', function() {
+                    row.remove();
+                    updateTotal();
+                    
+                    // Show "no products" message if table is empty
+                    if (addedProductsTable.children.length === 0) {
+                        const noProductsRow = document.createElement('tr');
+                        noProductsRow.id = 'no-products';
+                        noProductsRow.innerHTML = '<td colspan="5" class="text-center">No se han agregado productos</td>';
+                        addedProductsTable.appendChild(noProductsRow);
+                    }
+                });
+            });
+
+            // Update total for existing items
+            updateTotal();
+        }
+
+        // Call the function to add existing sale items
+        addExistingSaleItems();
+
+
+        // Función para actualizar subtotal
+        function updateSubtotal() {
+            const selectedOption = Array.from(productList.options)
+                .find(option => option.value === productInput.value);
+            
+            const unitPrice = selectedOption ? parseFloat(selectedOption.dataset.price) : 0;
+            const quantity = parseInt(quantityInput.value) || 0;
+            const subtotal = unitPrice * quantity;
+            
+            subtotalInput.value = subtotal.toFixed(2);
+        }
+
+        // Función para actualizar total de la venta
+        function updateTotal() {
+            const subtotalCells = addedProductsTable.querySelectorAll('td[data-subtotal]');
+            const totalInput = document.querySelector('input[name="sale[total]"]');
+            
+            let total = 0;
+            subtotalCells.forEach(cell => {
+                total += parseFloat(cell.dataset.subtotal) || 0;
+            });
+            
+            totalInput.value = total.toFixed(2);
+        }
+
+        // Función para crear campos ocultos
+        function createHiddenInput(name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            return input;
+        }
+
+        // Función para formatear números como moneda
+        function formatCurrency(number) {
+            return new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: 'ARS'
+            }).format(number);
+        }
+
+        // Agregar eventos para cálculo dinámico de subtotal
+        productInput.addEventListener('input', updateSubtotal);
+        quantityInput.addEventListener('input', updateSubtotal);
+
+        // Evento para botón de agregar producto
+        addSaleItemButton.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const selectedOption = Array.from(productList.options)
+                .find(option => option.value === productInput.value);
+            
+            if (!selectedOption) return;
+
+            const uniqueId = generateUniqueId();
+            const productId = selectedOption.getAttribute('data');
+            const productName = selectedOption.value;
+            const unitPrice = parseFloat(selectedOption.dataset.price);
+            const quantity = parseInt(quantityInput.value) || 0;
+            const subtotal = parseFloat(subtotalInput.value) || 0;
+
+            if (quantity > 0 && subtotal > 0) {
+                // Eliminar mensaje de "no productos" si existe
+                const noProductsRow = document.getElementById('no-products');
+                if (noProductsRow) {
+                    noProductsRow.remove();
+                }
+
+                // Crear nueva fila
+                const newRow = document.createElement('tr');
+                newRow.dataset.itemId = uniqueId;
+                
+                // Crear campos ocultos
+                const hiddenFields = [
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][product_id]`, productId),
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][quantity]`, quantity),
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][subtotal]`, subtotal)
+                ];
+
+                // Estructura de la fila
+                newRow.innerHTML = `
+                    <td>${productName}${hiddenFields.map(input => input.outerHTML).join('')}</td>
+                    <td class="text-center">${quantity}</td>
+                    <td class="text-right">${formatCurrency(unitPrice)}</td>
+                    <td class="text-right" data-subtotal="${subtotal}">${formatCurrency(subtotal)}</td>
+                    <td class="text-center">
+                        <button type="button" class="delete-button">Eliminar</button>
+                    </td>
+                `;
+
+                // Agregar evento al botón eliminar
+                const deleteButton = newRow.querySelector('.delete-button');
+                deleteButton.addEventListener('click', function() {
+                    newRow.remove();
+                    updateTotal();
+                    
+                    // Mostrar mensaje de no productos si la tabla está vacía
+                    if (addedProductsTable.children.length === 0) {
+                        const noProductsRow = document.createElement('tr');
+                        noProductsRow.id = 'no-products';
+                        noProductsRow.innerHTML = '<td colspan="5" class="text-center">No se han agregado productos</td>';
+                        addedProductsTable.appendChild(noProductsRow);
+                    }
+                });
+
+                // Agregar la fila a la tabla
+                addedProductsTable.appendChild(newRow);
+
+                // Limpiar campos
+                productInput.value = '';
+                quantityInput.value = '1';
+                subtotalInput.value = '0';
+                
+                updateTotal();
+            }
+        });
+
+        // Prevenir envío del formulario si no hay items
+        saleForm.addEventListener('submit', function(event) {
+            const items = addedProductsTable.querySelectorAll('tr[data-item-id]');
+            if (items.length === 0) {
+                event.preventDefault();
+                alert('Debe agregar al menos un producto a la venta.');
+            }
+        });
+    });
+</script>
+
+<style>
+    .table-container {
+    margin-top: 2rem;
+    overflow-x: auto;
+    }
+
+    .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    }
+
+    .items-table th,
+    .items-table td {
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    }
+
+    .items-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+    }
+
+    .text-center {
+    text-align: center;
+    }
+
+    .text-right {
+    text-align: right;
+    }
+
+    .delete-button {
+    padding: 0.375rem 0.75rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    }
+
+    .delete-button:hover {
+    background-color: #c82333;
+    }
+
+    .total-input {
+    width: 100%;
+    padding: 0.375rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    text-align: right;
+    }
+
+    .form-actions {
+    margin-top: 1rem;
+    text-align: right;
+    }
+
+    .submit-button {
+    padding: 0.5rem 1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    }
+
+    .submit-button:hover {
+    background-color: #218838;
+    }
+</style>

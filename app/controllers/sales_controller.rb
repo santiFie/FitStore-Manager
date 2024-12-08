@@ -14,44 +14,84 @@ class SalesController < ApplicationController
   def new
     @sale = Sale.new
     @sale.build_client  # Crea un cliente vacío para el formulario
-    @sale.sale_items.build  # Crea un ítem de venta vacío
+    @sale.prepare_sale_items # Crea un ítem de venta vacío
   end
 
   # GET /sales/1/edit
   def edit
+    @sale = Sale.find(params[:id])
+    Rails.logger.info(@sale.sale_items.inspect)
   end
 
-  # POST /sales or /sales.json
-  def create
-    @sale = Sale.new(sale_params)
 
+  def create
+    @sale = Sale.new(create_sale_params)
     begin
       ActiveRecord::Base.transaction do
-        Rails.logger.info("Creating sale...")
-        Rails.logger.info("Este es el usuario current #{current_user.inspect}")
+        # Primero, valida el cliente
+        client_attributes = create_sale_params[:client_attributes]
+        @client = Client.new(client_attributes)
 
-        @client = Client.find_or_create_by!(sale_params[:client_attributes])
-        Rails.logger.info("Client created")
-        Rails.logger.info(@client.inspect)
+
+        Rails.logger.info("Estos son los parametros: #{@sale_items_data}")
+
+        # Si el cliente no es válido, lanza una excepción
+        unless @client.valid?
+          @client.errors.full_messages.each do |message|
+            @sale.errors.add(:base, message)
+          end
+          raise ActiveRecord::RecordInvalid.new(@client)
+        end
+
+
+        # Si el cliente es válido, encuentra o crea
+        @client = Client.find_or_create_by!(dni: @client.dni) do |client|
+          client.assign_attributes(create_sale_params[:client_attributes])
+        end
 
         @sale.user = current_user
         @sale.client_id = @client.id
 
+        # Valida la venta antes de guardar
+        unless @sale.valid?
+          @sale.errors.full_messages.each do |message|
+            Rails.logger.info("Sale Error: #{message}")
+          end
+          raise ActiveRecord::RecordInvalid.new(@sale)
+        end
+
         @sale.save!
 
-        redirect_to @sale, notice: "Sale was successfully created."
+        redirect_to @sale, notice: "Venta creada exitosamente."
       end
-    rescue
-      flash.now[:alert] = "Hubo un error al crear la venta."
+    rescue ActiveRecord::RecordInvalid
       render :new, status: :unprocessable_entity
     end
   end
 
+  #  # POST /sales or /sales.json
+  # def create
+  #   @sale = Sale.new(create_sale_params)
+
+  #   ActiveRecord::Base.transaction do
+  #     @client = Client.find_or_create_by!(create_sale_params[:client_attributes])
+
+  #     @sale.user = current_user
+  #     @sale.client_id = @client.id
+
+  #     @sale.save!
+
+  #     redirect_to @sale, notice: "Sale was successfully created."
+  #   render :new, status: :unprocessable_entity
+  #   end
+  # end
+
   # PATCH/PUT /sales/1 or /sales/1.json
   def update
-    if @sale.update(sale_params)
+    if @sale.update(update_sale_params)
       redirect_to @sale, notice: "Sale was successfully updated."
     else
+      Rails.logger.info(@sale.errors.full_messages)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -68,12 +108,21 @@ class SalesController < ApplicationController
       @sale = Sale.find(params.expect(:id))
     end
 
-    def sale_params
+    def update_sale_params
       params.require(:sale).permit(
         :sale_date,
         :total,
-        client_attributes: [ :first_name, :last_name, :email, :phone, :dni, :birth_date ],
-        sale_items_attributes: [ :product_id, :quantity, :subtotal ]
+        client_attributes: [ :id, :first_name, :last_name, :email, :birth_date ],
+        sale_items_attributes: [ :id, :product_id, :quantity, :subtotal ]
+      )
+    end
+
+    def create_sale_params
+      params.require(:sale).permit(
+        :sale_date,
+        :total,
+        client_attributes: [ :dni, :first_name, :last_name, :email, :birth_date ],
+        sale_items_attributes: [ :id, :product_id, :quantity, :subtotal, :_destroy ]
       )
     end
 end

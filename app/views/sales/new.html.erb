@@ -1,7 +1,29 @@
-<%= form_with(model: @sale, local: true) do |sale_form| %>
+<%= form_with(model: @sale, local: true, id: 'sale-form', data: { turbo:false }) do |sale_form| %>
+
+    <% if @sale.errors.any? %>
+        <div id="error_explanation">
+            <h2><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
+            <ul>
+                <% @sale.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                <% end %>
+            </ul>
+        </div>
+    <% end %>
 
     <h2>Datos del Cliente</h2>
     <%= sale_form.fields_for :client do |client_form| %>
+        <% if @sale.client.errors.any? %>
+            <div id="error_explanation">
+                <h2><%= pluralize(@sale.client.errors.count, "error") %> impidieron que se guardara este cliente:</h2>
+                <ul>
+                    <% @sale.client.errors.full_messages.each do |message| %>
+                        <li><%= message %></li>
+                    <% end %>
+                </ul>
+            </div>
+        <% end %>
+
         <div class="field">
             <%= client_form.label :dni, "DNI" %>
             <%= client_form.text_field :dni %>
@@ -36,7 +58,8 @@
         <%= sale_item_form.label :product_id, "Producto" %>
         <%= sale_item_form.text_field :product_id, 
             list: "product_list", 
-            placeholder: "Selecciona un producto" %>
+            placeholder: "Selecciona un producto", 
+            value: "" %>
         
         <datalist id="product_list">
             <% Product.all.each do |product| %>
@@ -48,12 +71,12 @@
 
         <div class="field">
             <%= sale_item_form.label :quantity, "Cantidad" %>
-            <%= sale_item_form.number_field :quantity, min: 1 %>
+            <%= sale_item_form.number_field :quantity, min: 1, value: 1 %>
         </div>
 
         <div class="field">
             <%= sale_item_form.label :subtotal, "Subtotal" %>
-            <%= sale_item_form.text_field :subtotal, readonly: true %>
+            <%= sale_item_form.text_field :subtotal, readonly: true, value: 0 %>
         </div>
 
         <button type="button" class="add-item">Agregar producto</button>
@@ -72,15 +95,37 @@
             </tr>
         </thead>
         <tbody id="added_products">
-            <tr id="no-products">
-            <td colspan="5" class="text-center">No se han agregado productos</td>
+        <% if @selected_products %>
+            <% @selected_products.each do |index, item| %>
+            <tr data-item-id="<%= index %>">
+                <td>
+                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][product_id]", item.quantity %>
+                <%= Product.find(item.product_id).name %>
+                </td>
+                <td>
+                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][quantity]", item.quantity %>
+                <%= item.quantity %>
+                </td>
+                <td>
+                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][subtotal]", item.subtotal %>
+                <%= number_to_currency(item.subtotal) %>
+                </td>
+                <td>
+                <button type="button" class="delete-button">Eliminar</button>
+                </td>
             </tr>
-        </tbody>
+            <% end %>
+        <% else %>
+    <tr id="no-products">
+      <td colspan="5" class="text-center">No se han agregado productos</td>
+    </tr>
+  <% end %>
+</tbody>
         <tfoot>
             <tr>
             <td colspan="3" class="text-right"><strong>Total:</strong></td>
             <td colspan="2">
-                <%= sale_form.number_field :total, readonly: true, class: 'total-input' %>
+                <%= sale_form.number_field :total, readonly: true, class: 'total-input', value: 0 %>
             </td>
             </tr>
         </tfoot>
@@ -105,7 +150,8 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+        
         // Variable para llevar el conteo de IDs únicos
         let uniqueIdCounter = 0;
 
@@ -159,9 +205,9 @@
 
         // Función para formatear números como moneda
         function formatCurrency(number) {
-            return new Intl.NumberFormat('es-MX', {
-                style: 'currency',
-                currency: 'MXN'
+            return new Intl.NumberFormat('es-AR', {
+            style: 'currency',
+            currency: 'ARS'
             }).format(number);
         }
 
@@ -241,14 +287,6 @@
             }
         });
 
-        // Prevenir envío del formulario si no hay items
-        saleForm.addEventListener('submit', function(event) {
-            const items = addedProductsTable.querySelectorAll('tr[data-item-id]');
-            if (items.length === 0) {
-                event.preventDefault();
-                alert('Debe agregar al menos un producto a la venta.');
-            }
-        });
     });
 </script>
 
