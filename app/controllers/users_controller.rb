@@ -1,85 +1,93 @@
 class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy ]
 
-  # GET /users or /users.json
+  # GET /users
   def index
     @users = User.all
-  end
-
-  # GET /users/1 or /users/1.json
-  def show
+    authorize! :read, User
   end
 
   # GET /users/new
   def new
+    authorize! :create, User
     @user = User.new
   end
 
   # GET /users/1/edit
   def edit
+    authorize! :update, User
   end
 
-  # POST /users or /users.json
+  # POST /users
   def create
+    authorize! :create, User
+    if user_params[:role] == "administrador"
+      flash[:alert] = "No puedes crear un usuario con el rol de administrador."
+      redirect_to new_user_path and return
+    end
+
     @user = User.new(user_params)
 
-    respond_to do |format|
-      if @user.save
-        format.html { redirect_to @user, notice: "User was successfully created." }
-        format.json { render :show, status: :created, location: @user }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
+    if @user.save
+      redirect_to @user, notice: "Usuario creado correctamente."
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /users/1 or /users/1.json
+  # PATCH/PUT /users/1
   def update
-    respond_to do |format|
-      if @user.update(user_params)
-        format.html { redirect_to @user, notice: "User was successfully updated." }
-        format.json { render :show, status: :ok, location: @user }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
+    authorize! :update, User
+
+    if @user.role == "administrador" && current_user.role != "administrador"
+      Rails.logger.info("Rol del usuario: #{@user[:role]}")
+      Rails.logger.info("Rol del usuario a cambiar: #{current_user.role}")
+      redirect_to users_path, alert: "No puedes cambiar el rol de un usuario administrador." and return
+    end
+
+    if @user.update(user_params)
+      flash[:notice] = "Usuario actualizado correctamente."
+      redirect_to users_path
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
   # DELETE /users/1 or /users/1.json
   def destroy
+    authorize! :destroy, User
     @user.destroy!
 
-    respond_to do |format|
-      format.html { redirect_to users_path, status: :see_other, notice: "User was successfully destroyed." }
-      format.json { head :no_content }
-    end
+    flash[:notice] = "Usuario eliminado correctamente."
+    redirect_to users_path, status: :see_other and return
   end
 
   # GET /users/1/block
   def block
+    authorize! :block, User
     @user = User.find(params[:id])
-    @user.block
+    if @user == current_user
+      redirect_to users_path, alert: "No puedes bloquearte a ti mismo."
+    end
+      @user.block
 
-    redirect_to users_path, notice: "User was successfully blocked."
+    redirect_to users_path, notice: "Usuario bloqueado correctamente."
   end
 
   # GET /users/1/unblock
   def unblock
+    authorize! :unblock, User
     @user = User.find(params[:id])
     @user.unblock
 
-    redirect_to users_path, notice: "User was successfully unblocked."
+    redirect_to users_path, notice: "Usuario desbloqueado correctamente."
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_user
       @user = User.find(params.expect(:id))
     end
 
-    # Only allow a list of trusted parameters through.
     def user_params
       params.expect(user: [ :username, :email, :phone, :role, :start_date, :password, :password_confirmation ])
     end

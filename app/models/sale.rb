@@ -12,9 +12,17 @@ class Sale < ApplicationRecord
   accepts_nested_attributes_for :client
 
   validate :validate_sale_items
+  validate :enoough_stock
 
   def prepare_sale_items
     sale_items.build if sale_items.empty?
+  end
+
+  def cancel
+    update(canceled: true)
+    for sale_item in sale_items
+      sale_item.product.increment!(available_stock: sale_item.quantity)
+    end
   end
 
   private
@@ -36,6 +44,14 @@ class Sale < ApplicationRecord
         errors.add(:sale_date, "No puede ser en el futuro")
       elsif sale_date < 1.years.ago
         errors.add(:sale_date, "No puede ser tan antigua")
+      end
+    end
+  end
+
+  def enoough_stock
+    sale_items.each do |sale_item|
+      if sale_item.quantity > sale_item.product.available_stock
+        errors.add(:base, "No hay suficiente stock para el producto #{sale_item.product.name}")
       end
     end
   end

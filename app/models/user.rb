@@ -2,7 +2,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  enum :role, { admin: 0, supervisor: 1, employee: 2 }
+  enum :role, { administrador: 0, supervisor: 1, empleado: 2 }
 
 
   # Callback to set the default role

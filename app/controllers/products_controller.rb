@@ -5,15 +5,18 @@ class ProductsController < ApplicationController
   end
 
   def new
+    authorize! :create, Product
     @product = Product.new
   end
 
   def create
+    authorize! :create, Product
     @product = Product.new(product_params)
 
     begin
       if @product.save
-        redirect_to products_path, notice: "Producto creado exitosamente"
+        flash[:notice] = "Producto creado exitosamente"
+        redirect_to products_path
       else
         puts "Errores al guardar:"
         @product.errors.full_messages.each do |error|

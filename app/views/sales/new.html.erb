@@ -1,152 +1,158 @@
+<%= link_to "Volver", sales_path, class: "submit-button" %>
 <%= form_with(model: @sale, local: true, id: 'sale-form', data: { turbo:false }) do |sale_form| %>
 
     <% if @sale.errors.any? %>
-        <div id="error_explanation">
-            <h2><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
+        <div id="error_explanation" class="errors-container">
+            <h2 class="error-title"><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
             <ul>
                 <% @sale.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
+                    <li class="error-message"><%= message %></li>
                 <% end %>
             </ul>
         </div>
     <% end %>
 
-    <h2>Datos del Cliente</h2>
-    <%= sale_form.fields_for :client do |client_form| %>
-        <% if @sale.client.errors.any? %>
-            <div id="error_explanation">
-                <h2><%= pluralize(@sale.client.errors.count, "error") %> impidieron que se guardara este cliente:</h2>
-                <ul>
-                    <% @sale.client.errors.full_messages.each do |message| %>
-                        <li><%= message %></li>
+    <div class="flex-container">
+        <div class="left-container">
+            <div class="sale_form-container">
+                <h2>Datos del Cliente</h2>
+                <%= sale_form.fields_for :client do |client_form| %>
+                    <% if @sale.client.errors.any? %>
+                        <div id="error_explanation" class="errors-container">
+                            <h2 class="error-title"><%= pluralize(@sale.client.errors.count, "error") %> impidieron que se guardara este cliente:</h2>
+                            <ul>
+                                <% @sale.client.errors.full_messages.each do |message| %>
+                                    <li class="error-message"><%= message %></li>
+                                <% end %>
+                            </ul>
+                        </div>
                     <% end %>
-                </ul>
+
+                    <div class="field">
+                        <%= client_form.label :dni, "DNI", class: 'form-label' %>
+                        <%= client_form.text_field :dni, class: 'form-input' %>
+                    </div>
+
+                    <div class="field">
+                        <%= client_form.label :first_name, "Nombre del cliente", class: 'form-label' %>
+                        <%= client_form.text_field :first_name, class: 'form-input' %>
+                    </div>
+
+                    <div class="field">
+                        <%= client_form.label :last_name, "Apellido del cliente", class: 'form-label' %>
+                        <%= client_form.text_field :last_name, class: 'form-input' %>
+                    </div>
+
+                    <div class="field">
+                        <%= client_form.label :email, "Correo electrónico", class: 'form-label' %>
+                        <%= client_form.email_field :email, class: 'form-input' %>
+                    </div>
+
+                    <div class="field">
+                        <%= client_form.label :birth_date, "Fecha de nacimiento", class: 'form-label' %>
+                        <%= client_form.date_field :birth_date, class: 'form-input' %>
+                    </div>
+                <% end %>
+
+                <br>
+
+                <div class="field">
+                    <%= sale_form.label :sale_date, "Fecha de la venta", class: 'form-label' %>
+                    <%= sale_form.date_field :sale_date, class: 'form-input' %>
+                </div>
             </div>
-        <% end %>
 
-        <div class="field">
-            <%= client_form.label :dni, "DNI" %>
-            <%= client_form.text_field :dni %>
+            <div id="sale-items" class="sale_item_form-container">
+                <%= sale_form.fields_for :sale_items do |sale_item_form| %>
+                    <div id="sale-item-form">
+                        <%= sale_item_form.label :product_id, "Producto", class: 'form-label' %>
+                        <%= sale_item_form.text_field :product_id, 
+                            list: "product_list", 
+                            placeholder: "Selecciona un producto", 
+                            value: "", 
+                            class: 'form-input' %>
+                        
+                        <datalist id="product_list" class="field">
+                            <% Product.all.each do |product| %>
+                            <option data="<%= product.id %>" data-price="<%= product.unit_price %>">
+                                <%= product.name %>
+                            </option>
+                            <% end %>
+                        </datalist>
+
+                        <div class="field">
+                            <%= sale_item_form.label :quantity, "Cantidad", class: 'form-label' %>
+                            <%= sale_item_form.number_field :quantity, min: 1, value: 1, class: 'form-input' %>
+                        </div>
+
+                        <div class="field">
+                            <%= sale_item_form.label :subtotal, "Subtotal", class: 'form-label' %>
+                            <%= sale_item_form.text_field :subtotal, readonly: true, value: 0, class: 'form-input' %>
+                        </div>
+
+                        <button type="button" class="add-item">Agregar producto</button>
+                    </div>
+                <% end %>
+            </div>
         </div>
 
-        <div class="field">
-            <%= client_form.label :first_name, "Nombre del cliente" %>
-            <%= client_form.text_field :first_name %>
+        <div class="right-container">
+            <div class="table-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Subtotal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="added_products">
+                        <% if @selected_products %>
+                            <% @selected_products.each do |index, item| %>
+                                <tr data-item-id="<%= index %>">
+                                    <td>
+                                        <%= hidden_field_tag "sale[sale_items_attributes][#{index}][product_id]", item.quantity %>
+                                        <%= Product.find(item.product_id).name %>
+                                    </td>
+                                    <td>
+                                        <%= hidden_field_tag "sale[sale_items_attributes][#{index}][quantity]", item.quantity %>
+                                        <%= item.quantity %>
+                                    </td>
+                                    <td>
+                                        <%= hidden_field_tag "sale[sale_items_attributes][#{index}][subtotal]", item.subtotal %>
+                                        <%= number_to_currency(item.subtotal) %>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="delete-button">Eliminar</button>
+                                    </td>
+                                </tr>
+                            <% end %>
+                        <% else %>
+                            <tr id="no-products">
+                                <td colspan="5" class="text-center">No se han agregado productos</td>
+                            </tr>
+                        <% end %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                            <td colspan="2">
+                                <%= sale_form.number_field :total, readonly: true, class: 'total-input', value: 0 %>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
-
-        <div class="field">
-            <%= client_form.label :last_name, "Apellido del cliente" %>
-            <%= client_form.text_field :last_name %>
-        </div>
-
-        <div class="field">
-            <%= client_form.label :email, "Correo electrónico" %>
-            <%= client_form.email_field :email %>
-        </div>
-
-        <div class="field">
-            <%= client_form.label :birth_date, "Fecha de nacimiento" %>
-            <%= client_form.date_field :birth_date %>
-        </div>
-    <% end %>
-
-    <br>
-
-    <div id="sale-items">
-    <%= sale_form.fields_for :sale_items do |sale_item_form| %>
-        <div id="sale-item-form">
-        <%= sale_item_form.label :product_id, "Producto" %>
-        <%= sale_item_form.text_field :product_id, 
-            list: "product_list", 
-            placeholder: "Selecciona un producto", 
-            value: "" %>
-        
-        <datalist id="product_list">
-            <% Product.all.each do |product| %>
-            <option data="<%= product.id %>" data-price="<%= product.unit_price %>">
-                <%= product.name %>
-            </option>
-            <% end %>
-        </datalist>
-
-        <div class="field">
-            <%= sale_item_form.label :quantity, "Cantidad" %>
-            <%= sale_item_form.number_field :quantity, min: 1, value: 1 %>
-        </div>
-
-        <div class="field">
-            <%= sale_item_form.label :subtotal, "Subtotal" %>
-            <%= sale_item_form.text_field :subtotal, readonly: true, value: 0 %>
-        </div>
-
-        <button type="button" class="add-item">Agregar producto</button>
-        </div>
-    <% end %>
-
-    <div class="table-container">
-        <table class="items-table">
-        <thead>
-            <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-            <th>Subtotal</th>
-            <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="added_products">
-        <% if @selected_products %>
-            <% @selected_products.each do |index, item| %>
-            <tr data-item-id="<%= index %>">
-                <td>
-                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][product_id]", item.quantity %>
-                <%= Product.find(item.product_id).name %>
-                </td>
-                <td>
-                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][quantity]", item.quantity %>
-                <%= item.quantity %>
-                </td>
-                <td>
-                <%= hidden_field_tag "sale[sale_items_attributes][#{index}][subtotal]", item.subtotal %>
-                <%= number_to_currency(item.subtotal) %>
-                </td>
-                <td>
-                <button type="button" class="delete-button">Eliminar</button>
-                </td>
-            </tr>
-            <% end %>
-        <% else %>
-    <tr id="no-products">
-      <td colspan="5" class="text-center">No se han agregado productos</td>
-    </tr>
-  <% end %>
-</tbody>
-        <tfoot>
-            <tr>
-            <td colspan="3" class="text-right"><strong>Total:</strong></td>
-            <td colspan="2">
-                <%= sale_form.number_field :total, readonly: true, class: 'total-input', value: 0 %>
-            </td>
-            </tr>
-        </tfoot>
-        </table>
-    </div>
-    </div>
-
-    <br>
-
-    <h2>Datos de la Venta</h2>
-    <div class="field">
-        <%= sale_form.label :sale_date, "Fecha de la venta" %>
-        <%= sale_form.date_field :sale_date %>
     </div>
 
     <div class="form-actions">
-    <%= sale_form.submit "Crear Venta", class: 'submit-button' %>
+        <%= sale_form.submit "Crear Venta", class: 'submit-button' %>
     </div>
-<% end %>
 
-<%= link_to "Volver", sales_path %>
+<% end %>
 
 
 <script>
@@ -202,6 +208,42 @@ document.addEventListener('DOMContentLoaded', function() {
             input.value = value;
             return input;
         }
+
+        // New function to add existing sale items
+        function addExistingSaleItems() {
+            const addedProductsTable = document.getElementById('added_products');
+            const existingRows = addedProductsTable.querySelectorAll('tr[data-item-id]');
+            
+            // Remove the "no products" row if it exists
+            const noProductsRow = document.getElementById('no-products');
+            if (noProductsRow) {
+                noProductsRow.remove();
+            }
+
+            // Process each existing row
+            existingRows.forEach(row => {
+                // Add delete button functionality to existing rows
+                const deleteButton = row.querySelector('.delete-button');
+                deleteButton.addEventListener('click', function() {
+                    row.remove();
+                    updateTotal();
+                    
+                    // Show "no products" message if table is empty
+                    if (addedProductsTable.children.length === 0) {
+                        const noProductsRow = document.createElement('tr');
+                        noProductsRow.id = 'no-products';
+                        noProductsRow.innerHTML = '<td colspan="5" class="text-center">No se han agregado productos</td>';
+                        addedProductsTable.appendChild(noProductsRow);
+                    }
+                });
+            });
+
+            // Update total for existing items
+            updateTotal();
+        }
+
+        // Call the function to add existing sale items
+        addExistingSaleItems();
 
         // Función para formatear números como moneda
         function formatCurrency(number) {
@@ -291,73 +333,129 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    .table-container {
-    margin-top: 2rem;
-    overflow-x: auto;
+    .flex-container {
+        display: flex;
+        justify-content: space-between;
     }
 
-    .items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
+    .left-container, .right-container {
+        width: 48%;
     }
 
-    .items-table th,
-    .items-table td {
-    padding: 0.75rem;
-    border: 1px solid #dee2e6;
+    .sale_form-container {
+        margin: 20px;
     }
 
-    .items-table thead th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    text-align: left;
+    .sale_item_form-container {
+        margin: 20px;
+        border: 1px solid black; 
+        padding: 20px;
     }
 
-    .text-center {
-    text-align: center;
+    .field {
+        margin-bottom: 10px;
     }
 
-    .text-right {
-    text-align: right;
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-font-family: Arial, sans-serif;
     }
 
-    .delete-button {
-    padding: 0.375rem 0.75rem;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    }
-
-    .delete-button:hover {
-    background-color: #c82333;
-    }
-
-    .total-input {
-    width: 100%;
-    padding: 0.375rem;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    text-align: right;
-    }
-
-    .form-actions {
-    margin-top: 1rem;
-    text-align: right;
+    .form-input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
     }
 
     .submit-button {
-    padding: 0.5rem 1rem;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin: 20px;    
     }
 
     .submit-button:hover {
-    background-color: #218838;
+        background-color: #45a049;
+    }
+
+    .errors-container {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .error-title {
+        margin: 0 0 10px 0;
+    }
+
+    .error-message {
+        margin: 0;
+    }
+
+    .table-container {
+        margin-top: 20px;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .items-table th, .items-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .items-table th {
+        background-color: #f2f2f2;
+        text-align: left;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .total-input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        text-align: right;
+    }
+
+    .delete-button {
+        background-color: #f44336;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .delete-button:hover {
+        background-color: #e53935;
+    }
+
+    .add-item {
+        background-color: #008CBA;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .add-item:hover {
+        background-color: #007bb5;
     }
 </style>

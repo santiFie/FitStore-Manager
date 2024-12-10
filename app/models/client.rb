@@ -4,7 +4,6 @@ class Client < ApplicationRecord
             uniqueness: { message: "Ya existe un cliente con ese DNI" }
   validates :email,
             presence: { message: "El correo electrónico no puede estar en blanco" },
-            uniqueness: { message: "Ya existe un cliente con ese email" },
             format: {
               with: URI::MailTo::EMAIL_REGEXP,
               message: "Formato de correo electrónico inválido"

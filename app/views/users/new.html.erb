@@ -1,64 +1,264 @@
-<% content_for :title, "New user" %>
+<div>
+  <%= link_to "Volver", users_path, class: "btn btn-secondary btn-md" %>
+</div>
 
-<h1>New user</h1>
+<% content_for :title, "Nuevo Usuario" %>
 
-<%= form_with(model: @user, local: true) do |f| %>
+<% if flash[:notice] %>
+  <div class="alert alert-success text-center">
+    <%= flash[:notice] %>
+  </div>
+<% elsif flash[:alert] %>
+  <div class="alert alert-danger text-center">
+    <%= flash[:alert] %>
+  </div>
+<% end %>
+
+<h1 class="text-center my-4">Nuevo usuario</h1>
+<%= form_with(model: @user, local: true, class: "user-form shadow p-4 mb-5 bg-white rounded") do |f| %>
 
   <% if @user.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
-
+    <div id="error_explanation" class="alert alert-danger">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibieron que se cree el usuario.</h2>
       <ul>
         <% @user.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>
-  </div>
-<% end %>
+    </div>
+  <% end %>
 
-<div class="field">
-    <%= f.label :username %><br />
-    <%= f.text_field :username %>
-  </div>
-
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email %>
+  <div class="form-group">
+    <%= f.label :username, "Nombre de usuario", class: "form-label" %>
+    <%= f.text_field :username, class: "form-control" %>
   </div>
 
-  <div class="field">
-    <%= f.label :role %><br />
-    <%= f.select :role, User.roles.keys.map { |role| [role.humanize, role] } %>
+  <div class="form-group">
+    <%= f.label :email, "Correo electrónico", class: "form-label" %>
+    <%= f.email_field :email, class: "form-control" %>
   </div>
 
-  <div class="field">
-    <%= f.label :start_date %><br />
-    <%= f.date_select :start_date %>
+  <div class="form-group">
+    <%= f.label :role, "Rol", class: "form-label" %>
+    <%= f.select :role, User.roles.keys.reject { |role| !current_user.administrador? && role == 'administrador' }.map { |role| [role.humanize, role] }, {}, class: "form-control" %>
   </div>
 
-  <div class="field">
-    <%= f.label :phone %><br />
-    <%= f.telephone_field :phone %>
+  <div class="form-group">
+    <%= f.label :start_date, "Fecha de inicio", class: "form-label" %>
+    <%= f.date_select :start_date, { use_month_names: %w[Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre] }, class: "form-control" %>
   </div>
 
-  <div class="field">
-    <%= f.label :password %>
+  <div class="form-group">
+    <%= f.label :phone, "Teléfono", class: "form-label" %>
+    <%= f.telephone_field :phone, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :password, "Contraseña", class: "form-label" %>
     <% if @minimum_password_length %>
-    <em>(<%= @minimum_password_length %> characters minimum)</em>
-    <% end %><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
+      <em>(<%= @minimum_password_length %> caracteres mínimo)</em>
+    <% end %>
+    <%= f.password_field :password, autocomplete: "new-password", class: "form-control" %>
   </div>
 
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  <div class="form-group">
+    <%= f.label :password_confirmation, "Confirmar contraseña", class: "form-label" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control" %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Create User" %>
+  <div class="form-group text-center">
+    <%= f.submit "Crear usuario", class: "btn btn-primary btn-lg" %>
   </div>
 <% end %>
 
-<div>
-  <%= link_to "Back to users", users_path %>
-</div>
+<style>
+  /* Variables */
+  :root {
+      --primary-color: green;
+      --primary-hover: #357abd;
+      --secondary-color: red;
+      --secondary-hover: #5a6268;
+      --error-color: #dc3545;
+      --success-color: #28a745;
+      --border-color: #dee2e6;
+      --text-color: #495057;
+      --light-bg: #f8f9fa;
+  }
+
+  /* General styles */
+  body {
+      background-color: #f5f7fa;
+      color: var(--text-color);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+  }
+
+  h1 {
+      color: var(--text-color);
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+  }
+
+  /* Form container */
+  .user-form {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Form groups */
+  .form-group {
+      margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+      font-weight: 500;
+      font-size: 0.95rem;
+  }
+
+  /* Form controls */
+  .form-control {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: white;
+      background-clip: padding-box;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .form-control:focus {
+      border-color: var(--primary-color);
+      outline: 0;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+  }
+
+  /* Select styling */
+  select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23495057' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+  }
+
+  /* Date select styling */
+  select.form-control[name*="date"] {
+      display: inline-block;
+      width: auto;
+      margin-right: 0.5rem;
+  }
+
+  /* Error styles */
+  .alert-danger {
+      background-color: #fff5f5;
+      border: 1px solid #feb2b2;
+      color: var(--error-color);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+  }
+
+  .alert-danger h2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--error-color);
+  }
+
+  .alert-danger ul {
+      margin: 0;
+      padding-left: 1.5rem;
+  }
+
+  .alert-danger li {
+      margin-bottom: 0.25rem;
+  }
+
+  /* Button styles */
+  .btn {
+      display: inline-block;
+      font-weight: 500;
+      text-align: center;
+      vertical-align: middle;
+      user-select: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 6px;
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+      border: none;
+  }
+
+  .btn-lg {
+      padding: 0.875rem 2rem;
+      font-size: 1.125rem;
+      border-radius: 8px;
+  }
+
+  .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+  }
+
+  .btn-primary:hover {
+      background-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+      background-color: var(--secondary-color);
+      color: white;
+      margin-top: 1rem;
+      text-decoration: none;
+  }
+
+  .btn-secondary:hover {
+      background-color: var(--secondary-hover);
+  }
+
+  /* Password hint */
+  em {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.875rem;
+      color: var(--secondary-color);
+  }
+
+  /* Center alignment utilities */
+  .text-center {
+      text-align: center;
+  }
+
+  .my-4 {
+      margin-top: 2.5rem;
+      margin-bottom: 2.5rem;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+      .user-form {
+          margin: 1rem;
+          padding: 1.5rem;
+      }
+
+      h1 {
+          font-size: 2rem;
+      }
+
+      .btn-lg {
+          width: 100%;
+          margin-bottom: 0.5rem;
+      }
+  }
+</style>

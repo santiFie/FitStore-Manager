@@ -5,13 +5,79 @@
 <h1>Ventas</h1>
 
 <div id="sales">
-  <% @sales.each do |sale| %>
-    <h3> Cliente: <%= sale.client.first_name %> <%= sale.client.last_name %> </h3>
-    <h3> Total: <%= sale.total %> </h3>
-  
-    <%= link_to "Editar venta", edit_sale_path(sale) %>
-    <%= link_to "Eliminar venta", sale_path(sale), data: { turbo_method: :delete, confirm: "¿Estás seguro?" } %>
+  <% if @sales.any? %>
+    <% @sales.each do |sale| %>
+      <div class="sale-item">
+        <h3>Cliente: <%= sale.client.first_name %> <%= sale.client.last_name %></h3>
+        <h3>Total: <%= number_to_currency(sale.total) %></h3>
+        
+        <div class="sale-actions">
+          <%= link_to "Editar venta", edit_sale_path(sale), class: "edit-button" %>
+          <%= link_to "Cancelar venta", sale_path(sale), data: { turbo_method: :delete, confirm: "¿Estás seguro?" }, class: "delete-button" %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <p>No hay ventas registradas</p>
   <% end %>
 </div>
 
-<%= link_to "Nueva venta", new_sale_path %>
+<%= link_to "Nueva venta", new_sale_path, class: "submit-button" %>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+
+  #sales {
+    margin-top: 20px;
+  }
+
+  .sale-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+  }
+
+  .sale-actions {
+    margin-top: 10px;
+  }
+
+  .edit-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    margin-right: 5px;
+  }
+
+  .edit-button:hover {
+    background-color: #45a049;
+  }
+
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+  }
+
+  .delete-button:hover {
+    background-color: #e53935;
+  }
+
+  .submit-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 20px;
+  }
+
+  .submit-button:hover {
+    background-color: #45a049;
+  }
+</style>

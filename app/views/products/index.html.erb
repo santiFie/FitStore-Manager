@@ -5,13 +5,11 @@
     </head>
     <body>
         <h1>Productos</h1>
-        <div>
-            <% if current_user %>
-                <%= link_to "Cerrar sesión", destroy_user_session_path, data: { turbo_method: :delete } %>
-            <% else %>
-                <%= link_to "Iniciar sesión", new_user_session_path %>
-            <% end %>
-        </div>
+        <% if can?(:create, Product) %>
+            <div class="new-product-button">
+            <%= link_to "Nuevo producto", new_product_path, class: 'new-product-button' %>
+            </div>
+        <% end %>
         <div class="general-container">
             <div class="products-filters">
             <h2>Filtros</h2>
@@ -21,25 +19,33 @@
                 <%= f.search_field :name_cont, class: 'form-control' %>
                 </div>
                 <div>
-                <%= f.label :category_id_eq, "Categoría" %>
+                <%= f.label :category_id_eq, "Categoría", class:"field"%>
                 <%= f.collection_select :category_id_eq, Category.all, :id, :name, include_blank: "Todas las categorías", class: 'form-control' %>
                 </div>
                 <%= f.submit "Buscar", class: 'btn btn-primary' %>
             <% end %>
             </div>
             <div class="products-container">
-                <ul class="products-list">
-                    <% @products.each do |product| %>
-                        <li class="product-item">
-                            <h3><%= product.name %></h3>
-                            <div>
-                                <%= image_tag url_for(product.images[0]), class: 'product-image' %>
-                            </div>
-                            <p><%= product.description %></p>
-                            <p>Precio: $<%= product.unit_price %></p>
-                        </li>
-                    <% end %>
-                </ul>
+                <% if @products.any? %>
+                    <ul class="products-list">
+                        <% @products.each do |product| %>
+                            <li class="product-item">
+                                <h3><%= product.name %></h3>
+                                <div>
+                                    <%= image_tag url_for(product.images[0]), class: 'product-image' %>
+                                </div>
+                                <p><%= product.description %></p>
+                                <p>Precio: $<%= product.unit_price %></p>
+                                <% if product.available_stock == 0 %>
+                                    <p class="text-danger">Sin stock</p>
+                                <% end %>
+                                <%= link_to "Ver detalle", product %>
+                            </li>
+                        <% end %>
+                    </ul>
+                <% else %>
+                    <p>No se encontraron productos.</p>
+                <% end %>
             </div>
         </div>
     </body>
@@ -61,15 +67,39 @@
     padding: 20px;
     border-right: 1px solid #ddd;
     max-width: 300px; 
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    height: fit-content;
 }
 
-.products-filters ul {
-    list-style: none;
-    padding: 0;
+.products-filters h2 {
+    margin-bottom: 20px;
 }
 
-.products-filters li {
-    margin-bottom: 10px;
+.products-filters .field,
+.products-filters div {
+    margin-bottom: 15px;
+}
+
+.products-filters .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.products-filters .btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.products-filters .btn:hover {
+    background-color: #218838; /* Darker green on hover */
 }
 
 .products-container {
@@ -98,6 +128,21 @@
     height: 350px;
     object-fit: cover;
     border-radius: 5px;
+}
+
+.new-product-button {
+    display: inline-block;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px;
+    text-decoration: none;
+}
+
+.new-product-button:hover {
+    background-color: #218838; /* Darker green on hover */
 }
 
 </style>

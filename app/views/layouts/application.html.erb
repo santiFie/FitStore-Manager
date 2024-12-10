@@ -15,9 +15,9 @@
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/images/logo.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/images/logo.webp">
+    <link rel="preload" href="/assets/application-e98745be.js" as="script">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
@@ -25,6 +25,77 @@
   </head>
 
   <body>
+    <nav>
+      <ul class="navbar">
+      <li class="left">
+        <% if current_user %>
+        <%= link_to "Mi cuenta", edit_user_path(current_user) %>
+        <% end %>
+      </li>
+      <div class="center">
+        <% if can? :read, Product %>
+        <li><%= link_to 'Productos', products_path %></li>
+        <% end %>
+        <% if can? :read, Sale %>
+        <li><%= link_to 'Ventas', sales_path %></li>
+        <% end %>
+        <% if can? :read, User %>
+        <li><%= link_to 'Usuarios', users_path %></li>
+        <% end %>
+      </div>
+      <li class="right">
+        <% if current_user %>
+        <%= link_to "Cerrar sesión", destroy_user_session_path, data: { turbo_method: :delete, turbo_confirm: "¿Está seguro de que desea cerrar sesión?" } %>
+        <% else %>
+        <%= link_to "Iniciar sesión", new_user_session_path %>
+        <% end %>
+      </li>
+      </ul>
+    </nav>
+
     <%= yield %>
   </body>
 </html>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+
+  .navbar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #99cc99;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .navbar .center {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+  }
+
+  .navbar li {
+    float: none;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .navbar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+
+  .navbar li a:hover {
+    background-color: #111;
+  }
+
+  .navbar .right {
+    margin-left: auto;
+  }
+</style>

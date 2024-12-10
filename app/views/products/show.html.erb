@@ -1,41 +1,111 @@
-<h1><%= @product.name %></h1>
+<h1 class="text-center my-4"><%= @product.name %></h1>
 
-<p>
-    <strong>Price:</strong>
-    <%= number_to_currency(@product.unit_price) %>
-</p>
+<%= link_to 'Volver', products_path, class: "btn btn-secondary btn-md" %>
 
-<p>
-    <strong>Description:</strong>
-    <%= @product.description %>
-</p>
+<div class="product-details shadow p-4 mb-5 bg-white rounded">
+    <p>
+        <strong>Precio:</strong>
+        <%= number_to_currency(@product.unit_price) %>
+    </p>
 
-<p>
-    <strong>Category:</strong>
-    <%= @product.category.name %>
-</p>
+    <p>
+        <strong>Descripción:</strong>
+        <%= @product.description %>
+    </p>
 
-<p>
-    <strong>Stock:</strong>
-    <%= @product.available_stock %>
-</p>
+    <p>
+        <strong>Categoría:</strong>
+        <%= @product.category.name %>
+    </p>
 
-<p>
-    <strong>Created At:</strong>
-    <%= @product.entry_date %>
-</p>
+    <p>
+        <strong>Stock:</strong>
+        <% if @product.available_stock > 0 %>
+            Hay <%= @product.available_stock %> unidades disponibles.
+        <% else %>
+            No hay stock disponible.
+        <% end %>
+    </p>
 
-<p>
-    <strong>Updated At:</strong>
-    <%= @product.updated_at %>
-</p>
+    <p>
+        <strong>Talle:</strong>
+        <%= @product.size %>
+    </p>
 
-<% if @product.images.attached? %>
-  <h3>Images:</h3>
-  <% @product.images.each do |image| %>
-    <%= image_tag image.variant(:thumb) %>
-  <% end %>
-<% end %>
+    <p>
+        <strong>Color:</strong>
+        <%= @product.color %>
+    </p>
 
-<%= link_to 'Edit', edit_product_path(@product) %> |
-<%= link_to 'Back', products_path %>
+
+    <% if @product.images.attached? %>
+        <h3>Imágenes:</h3>
+        <div class="product-images">
+            <% @product.images.each do |image| %>
+                <%= link_to url_for(image), target: "_blank" do %>
+                    <%= image_tag url_for(image), class: "img-thumbnail" %>
+                <% end %>
+            <% end %>
+        </div>
+    <% end %>
+
+    <% if can?(:update, @product) %>
+        <div class="text-center mt-4">
+            <%= link_to 'Editar', edit_product_path(@product), class: "btn btn-primary btn-md" %>
+        </div>
+    <% end %>
+</div>
+
+<style>
+    .product-details {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-details p {
+        margin-bottom: 1rem;
+        color: var(--text-color);
+        font-size: 1rem;
+    }
+
+    .product-details strong {
+        font-weight: 600;
+    }
+
+    .product-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .img-thumbnail {
+        max-width: 100px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-md {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 6px;
+    }
+
+    .mt-4 {
+        margin-top: 2rem;
+    }
+
+    .btn-secondary {
+        background-color: red;
+        color: white;
+        margin-top: 1rem;
+        text-decoration : none;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+</style>

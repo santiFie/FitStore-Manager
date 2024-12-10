@@ -30,7 +30,7 @@ Category.find_or_create_by!(name: "Accesorios")
 # Create products
 # Create products
 products = [
-  { name: "Blusa", description: "Blusa de algodón", unit_price: 100, available_stock: 50, size: "M", color: "Rojo", entry_date: Date.today, last_modified_at: DateTime.now, category_id: 1, images: [ File.open("/home/santiago/Documentos/Tercero/Ruby/Images/Blusa.webp") ] },
+  { name: "Blusa", description: "Blusa de algodón", unit_price: 100, available_stock: 0, size: "M", color: "Rojo", entry_date: Date.today, last_modified_at: DateTime.now, category_id: 1, images: [ File.open("/home/santiago/Documentos/Tercero/Ruby/Images/Blusa.webp") ] },
   { name: "Pantalón", description: "Pantalón de mezclilla", unit_price: 200, available_stock: 30, size: "L", color: "Azul", entry_date: Date.today, last_modified_at: DateTime.now, category_id: 2, images: [ File.open("/home/santiago/Documentos/Tercero/Ruby/Images/Pantalon.webp") ] },
   { name: "Vestido", description: "Vestido de verano", unit_price: 150, available_stock: 20, size: "S", color: "Amarillo", entry_date: Date.today, last_modified_at: DateTime.now, category_id: 1, images: [ File.open("/home/santiago/Documentos/Tercero/Ruby/Images/Vestido.webp") ] },
   { name: "Camisa", description: "Camisa formal", unit_price: 120, available_stock: 40, size: "M", color: "Blanco", entry_date: Date.today, last_modified_at: DateTime.now, category_id: 2, images: [ File.open("/home/santiago/Documentos/Tercero/Ruby/Images/Camisa.webp") ] },

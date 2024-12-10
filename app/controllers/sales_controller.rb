@@ -3,7 +3,7 @@ class SalesController < ApplicationController
 
   # GET /sales or /sales.json
   def index
-    @sales = Sale.all
+    @sales = Sale.all.filter { |sale| sale.canceled == false }
   end
 
   # GET /sales/1 or /sales/1.json
@@ -28,26 +28,10 @@ class SalesController < ApplicationController
     @sale = Sale.new(create_sale_params)
     begin
       ActiveRecord::Base.transaction do
-        # Primero, valida el cliente
-        client_attributes = create_sale_params[:client_attributes]
-        @client = Client.new(client_attributes)
-
-
-        Rails.logger.info("Estos son los parametros: #{@sale_items_data}")
-
-        # Si el cliente no es válido, lanza una excepción
-        unless @client.valid?
-          @client.errors.full_messages.each do |message|
-            @sale.errors.add(:base, message)
-          end
-          raise ActiveRecord::RecordInvalid.new(@client)
-        end
-
-
         # Si el cliente es válido, encuentra o crea
-        @client = Client.find_or_create_by!(dni: @client.dni) do |client|
-          client.assign_attributes(create_sale_params[:client_attributes])
-        end
+        @client = Client.find_or_initialize_by(dni: create_sale_params[:client_attributes][:dni])
+        @client.assign_attributes(create_sale_params[:client_attributes])
+        @client.save!
 
         @sale.user = current_user
         @sale.client_id = @client.id
@@ -89,7 +73,7 @@ class SalesController < ApplicationController
   # PATCH/PUT /sales/1 or /sales/1.json
   def update
     if @sale.update(update_sale_params)
-      redirect_to @sale, notice: "Sale was successfully updated."
+      redirect_to @sale, notice: "Venta actualizada correctamente"
     else
       Rails.logger.info(@sale.errors.full_messages)
       render :edit, status: :unprocessable_entity
@@ -98,8 +82,8 @@ class SalesController < ApplicationController
 
   # DELETE /sales/1 or /sales/1.json
   def destroy
-    @sale.destroy!
-    redirect_to sales_path, status: :see_other, notice: "Sale was successfully destroyed."
+    @sale.cancel
+    redirect_to sales_path, status: :see_other, notice: "Venta cancelada correctamente"
   end
 
   private
