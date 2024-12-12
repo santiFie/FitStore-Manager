@@ -9,10 +9,10 @@ class Sale < ApplicationRecord
   validates_associated :client
 
   accepts_nested_attributes_for :sale_items, allow_destroy: true, reject_if: lambda { |attributes| attributes["product_id"].blank? }
-  accepts_nested_attributes_for :client
+  accepts_nested_attributes_for :client, reject_if: lambda { |attributes| attributes["client_id"].blank? }
 
   validate :validate_sale_items
-  validate :enoough_stock
+  validate :enough_stock
 
   def prepare_sale_items
     sale_items.build if sale_items.empty?
@@ -36,9 +36,6 @@ class Sale < ApplicationRecord
   private
 
   def sale_date_cannot_be_in_the_future_or_too_old
-    Rails.logger.info("Fecha de venta: #{sale_date}")
-    Rails.logger.info("Fecha actual: #{Date.today}")
-    Rails.logger.info(sale_date.present?)
     if sale_date.present?
       if sale_date > Date.today
         errors.add(:sale_date, "No puede ser en el futuro")
@@ -48,7 +45,7 @@ class Sale < ApplicationRecord
     end
   end
 
-  def enoough_stock
+  def enough_stock
     sale_items.each do |sale_item|
       if sale_item.quantity > sale_item.product.available_stock
         errors.add(:base, "No hay suficiente stock para el producto #{sale_item.product.name}")

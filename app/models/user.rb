@@ -9,7 +9,7 @@ class User < ApplicationRecord
   after_initialize :set_default_role, if: :new_record?
 
   def set_default_role
-    self.role ||= :employee
+    self.role ||= :empleado
   end
 
   def blocked?
@@ -28,7 +28,6 @@ class User < ApplicationRecord
     self.save
   end
 
-  # Validations
   validates :username, presence: true, uniqueness: { message: "ya ha sido tomado" }
   validates :email, presence: true, uniqueness: { message: "ya ha sido tomado" }
   validates :role, presence: true

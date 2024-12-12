@@ -1,4 +1,14 @@
 
+<% if flash.any? %>
+    <div class="flash-messages">
+        <% flash.each do |key, message| %>
+            <div class="alert alert-<%= key %>">
+                <%= message %>
+            </div>
+        <% end %>
+    </div>
+<% end %>
+
 <div>
   <%= link_to "Volver", root_path, class: "btn btn-secondary btn-md" %>
 </div>

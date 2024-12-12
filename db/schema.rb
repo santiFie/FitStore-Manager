@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_08_144140) do
+ActiveRecord::Schema[8.0].define(version: 2024_12_11_205837) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -54,7 +54,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_08_144140) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["dni"], name: "index_clients_on_dni", unique: true
-    t.index ["email"], name: "index_clients_on_email"
+    t.index ["email"], name: "index_clients_on_email", unique: true
   end
 
   create_table "products", force: :cascade do |t|
@@ -91,7 +91,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_08_144140) do
     t.integer "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "canceled", default: true, null: false
+    t.boolean "canceled", default: false, null: false
     t.index ["client_id"], name: "index_sales_on_client_id"
     t.index ["user_id"], name: "index_sales_on_user_id"
   end

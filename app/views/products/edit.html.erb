@@ -1,11 +1,25 @@
-<h1>Editar Producto</h1>
+<% content_for :title, "Editar Producto" %>
 
-<%= link_to "Volver", :back %>
+<% if flash[:notice] %>
+    <div class="alert alert-success text-center">
+        <%= flash[:notice] %>
+    </div>
+<% elsif flash[:alert] %>
+    <div class="alert alert-danger text-center">
+        <%= flash[:alert] %>
+    </div>
+<% end %>
 
+<div>
+    <%= link_to "Volver", products_path, class: "btn btn-secondary btn-md" %>
+</div>
 
-<%= form_with model: @product, local: true do |form| %>
+<h1 class="text-center my-4">Editar Producto</h1>
+
+<%= form_with model: @product, local: true, class: "product-form shadow p-4 mb-5 bg-white rounded" do |form| %>
     <% if @product.errors.any? %>
-        <div id="error_explanation">
+        <div id="error_explanation" class="alert alert-danger">
+            <h2><%= pluralize(@product.errors.count, "error") %> prohibieron que se actualice el producto.</h2>
             <ul>
                 <% @product.errors.full_messages.each do |message| %>
                     <li><%= message %></li>
@@ -14,41 +28,40 @@
         </div>
     <% end %>
 
-    <div class="field">
-        <%= form.label :name, "Nombre" %>
-        <%= form.text_field :name %>
+    <div class="form-group">
+        <%= form.label :name, "Nombre", class: "form-label" %>
+        <%= form.text_field :name, class: "form-control" %>
     </div>
 
-    <div class="field">
-        <%= form.label :description, "Descripción" %>
-        <%= form.text_area :description %>
+    <div class="form-group">
+        <%= form.label :description, "Descripción", class: "form-label" %>
+        <%= form.text_area :description, class: "form-control" %>
     </div>
 
-    <div class="field">
-        <%= form.label :unit_price, "Precio por unidad" %>
-        <%= form.number_field :unit_price, step: 0.01 %>
+    <div class="form-group">
+        <%= form.label :unit_price, "Precio por unidad", class: "form-label" %>
+        <%= form.number_field :unit_price, step: 0.01, class: "form-control" %>
     </div>
 
-    <div class="field">
-        <%= form.label :available_stock, "Stock disponible" %>
-        <%= form.number_field :available_stock %>
+    <div class="form-group">
+        <%= form.label :available_stock, "Stock disponible", class: "form-label" %>
+        <%= form.number_field :available_stock, class: "form-control" %>
     </div>
 
-    <div class="field">
-        <%= form.label :category_id, "Categoría" %>
-        <%= form.collection_select :category_id, Category.all, :id, :name %>
+    <div class="form-group">
+        <%= form.label :category_id, "Categoría", class: "form-label" %>
+        <%= form.collection_select :category_id, Category.all, :id, :name, {}, class: "form-control" %>
     </div>
 
     <%= hidden_field_tag "product[images_to_delete]", "", id: "images-to-delete" %>
 
-    <div class="field">
-        <%= form.label :images, "Imágenes" %>
+    <div class="form-group">
+        <%= form.label :images, "Imágenes", class: "form-label" %>
         <div id="existing-images">
             <% @product.images.each do |image| %>
                 <div id="image_<%= image.id %>" class="image-preview">
-                    <%= image_tag image, class: 'product-image' %>
                     <%= image_tag image.variant(resize_to_limit: [100, 100]), class: 'product-image' %>
-                    <%= link_to "Eliminar", "#", class: 'delete-image-btn', data: { image_id: image.id } %>
+                    <button type="button" class="delete-image-btn" data-image_id="<%= image.id %>">Eliminar</button>
                 </div>
             <% end %>
         </div>
@@ -58,73 +71,268 @@
                 <%= form.file_field :images, 
                     name: "product[images][]", 
                     id: "image_1", 
-                    accept: 'image/png,image/jpeg,image/jpg,image/gif' %>
+                    accept: 'image/png,image/jpeg,image/jpg,image/gif', 
+                    class: "form-control-file" %>
             <% end %>
         </div>
 
         <% if @product.images.count < 5 %>
-            <button type="button" id="add-file-input">Agregar otra imagen</button>
+            <button type="button" id="add-file-input" >Agregar otra imagen</button>
         <% end %>
     </div>
 
-    <div class="actions">
-        <%= form.submit "Actualizar Producto" %>
+    <div class="form-group text-center">
+        <%= form.submit "Actualizar Producto", class: "btn btn-primary btn-lg" %>
     </div>
 
-    <%= link_to "Eliminar producto", product_path(@product), method: :delete , data: { turbo_method: :delete, id:@product.id }%>
-
-
+    <div class="text-center mt-4">
+        <%= link_to "Eliminar producto", product_path(@product), method: :delete, data: { turbo_method: :delete, id:@product.id }, class: "btn btn-danger btn-md" %>
+    </div>
 <% end %>
-
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-    const maxFiles = 5;
-    const fileInputsContainer = document.getElementById("file-inputs");
-    const addFileInputButton = document.getElementById("add-file-input");
-    const existingImagesContainer = document.getElementById("existing-images");
-    const imagesToDeleteInput = document.getElementById("images-to-delete");
+        const maxFiles = 5;
+        const fileInputsContainer = document.getElementById("file-inputs");
+        const addFileInputButton = document.getElementById("add-file-input");
+        const existingImagesContainer = document.getElementById("existing-images");
+        const imagesToDeleteInput = document.getElementById("images-to-delete");
 
-    function updateAddButton() {
-        const currentFileInputs = fileInputsContainer.querySelectorAll('input[type="file"]').length;
-        const existingImagesCount = existingImagesContainer.querySelectorAll('.image-preview').length;
-        const totalImages = existingImagesCount + currentFileInputs;
+        function updateAddButton() {
+            const currentFileInputs = fileInputsContainer.querySelectorAll('input[type="file"]').length;
+            const existingImagesCount = existingImagesContainer.querySelectorAll('.image-preview').length;
+            const totalImages = existingImagesCount + currentFileInputs;
 
-        addFileInputButton.disabled = totalImages >= maxFiles;
-    }
+            addFileInputButton.disabled = totalImages >= maxFiles;
+        }
 
-    if (addFileInputButton) {
-        addFileInputButton.addEventListener("click", function() {
-            const newFileInput = document.createElement("input");
-            newFileInput.type = "file";
-            newFileInput.name = "product[images][]";
-            newFileInput.accept = 'image/png,image/jpeg,image/jpg,image/gif';
-            fileInputsContainer.appendChild(newFileInput);
-            updateAddButton();
+        if (addFileInputButton) {
+            addFileInputButton.addEventListener("click", function() {
+                const newFileInput = document.createElement("input");
+                newFileInput.type = "file";
+                newFileInput.name = "product[images][]";
+                newFileInput.accept = 'image/png,image/jpeg,image/jpg,image/gif';
+                newFileInput.classList.add("form-control-file");
+                fileInputsContainer.appendChild(newFileInput);
+                updateAddButton();
+            });
+        }
+
+        existingImagesContainer.addEventListener("click", function(e) {
+            if (e.target.classList.contains("delete-image-btn")) {
+                e.preventDefault();
+                const imageDiv = e.target.closest(".image-preview");
+                const imageId = e.target.dataset.image_id;
+
+                // Marcar para eliminación
+                const imagesToDelete = imagesToDeleteInput.value.split(',').filter(Boolean);
+                if (!imagesToDelete.includes(imageId)) {
+                    imagesToDelete.push(imageId);
+                    imagesToDeleteInput.value = imagesToDelete.join(',');
+                }
+
+                // Eliminar visualmente
+                imageDiv.remove();
+                updateAddButton();
+            }
         });
+
+        updateAddButton();
+    });
+</script>
+
+<style>
+    /* Variables */
+    :root {
+            --primary-color: green;
+            --primary-hover: #357abd;
+            --secondary-color: red;
+            --secondary-hover: #5a6268;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #dee2e6;
+            --text-color: #495057;
+            --light-bg: #f8f9fa;
     }
 
-    existingImagesContainer.addEventListener("click", function(e) {
-        if (e.target.classList.contains("delete-image-btn")) {
-            e.preventDefault();
-            const imageDiv = e.target.closest(".image-preview");
-            const imageId = e.target.dataset.image_id;
+    /* General styles */
+    body {
+            background-color: #f5f7fa;
+            color: var(--text-color);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+    }
 
-            // Marcar para eliminación
-            const imagesToDelete = imagesToDeleteInput.value.split(',').filter(Boolean);
-            if (!imagesToDelete.includes(imageId)) {
-                imagesToDelete.push(imageId);
-                imagesToDeleteInput.value = imagesToDelete.join(',');
+    h1 {
+            color: var(--text-color);
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+    }
+
+    /* Form container */
+    .product-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form groups */
+    .form-group {
+            margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+    }
+
+    /* Form controls */
+    .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: white;
+            background-clip: padding-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .form-control:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+    }
+
+    .form-control-file {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: white;
+            background-clip: padding-box;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .form-control-file:focus {
+            border-color: var(--primary-color);
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+    }
+
+    /* Error styles */
+    .alert-danger {
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: var(--error-color);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+    }
+
+    .alert-danger h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--error-color);
+    }
+
+    .alert-danger ul {
+            margin: 0;
+            padding-left: 1.5rem;
+    }
+
+    .alert-danger li {
+            margin-bottom: 0.25rem;
+    }
+
+    /* Button styles */
+    .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: none;
+    }
+
+    .btn-lg {
+            padding: 0.875rem 2rem;
+            font-size: 1.125rem;
+            border-radius: 8px;
+    }
+
+    .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+    }
+
+    .btn-primary:hover {
+            background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-top: 1rem;
+    }
+
+    .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+    }
+
+    .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+    }
+
+    .btn-danger:hover {
+            background-color: #c82333;
+    }
+
+    /* Center alignment utilities */
+    .text-center {
+            text-align: center;
+    }
+
+    .my-4 {
+            margin-top: 2.5rem;
+            margin-bottom: 2.5rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+            .product-form {
+                    margin: 1rem;
+                    padding: 1.5rem;
             }
 
-            // Eliminar visualmente
-            imageDiv.remove();
-            updateAddButton();
-        }
-    });
+            h1 {
+                    font-size: 2rem;
+            }
 
-    updateAddButton();
-});
-
-
-</script>
+            .btn-lg {
+                    width: 100%;
+                    margin-bottom: 0.5rem;
+            }
+    }
+</style>

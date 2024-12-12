@@ -3,8 +3,8 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    @users = User.all
     authorize! :read, User
+    @users = User.all
   end
 
   # GET /users/new

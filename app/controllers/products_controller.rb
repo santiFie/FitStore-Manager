@@ -1,16 +1,17 @@
 class ProductsController < ApplicationController
+  load_and_authorize_resource
   def index
+    # authorize! :read, Product
     @q = Product.ransack(params[:q])
-    @products = @q.result(distinct: true)
+    @products = @q.result(distinct: true).filter { |product| product.available_stock > 0 }
   end
 
   def new
-    authorize! :create, Product
-    @product = Product.new
+    #    authorize! :create, Product
+    #    @product = Product.new
   end
 
   def create
-    authorize! :create, Product
     @product = Product.new(product_params)
 
     begin
@@ -24,25 +25,28 @@ class ProductsController < ApplicationController
         end
         render :new, status: :unprocessable_entity
       end
-    rescue => e
-      puts "Excepción capturada: #{e.message}"
-      puts e.backtrace
+    rescue
+      flash[:alert] = "No se pudo guardar el producto"
       render :new, status: :unprocessable_entity
     end
   end
 
   def show
-    @product = Product.find(params[:id])
+    # authorize! :read, Product
+    # @product = Product.find(params[:id])
   end
 
   def edit
-    @product = Product.find(params[:id])
+    # authorize! :update, Product
+    # @product = Product.find(params[:id])
   end
 
   def update
+    # authorize! :update, Product
     @product = Product.find(params[:id])
 
     images_to_delete = params[:product][:images_to_delete]&.split(",") || []
+    Rails.logger.debug "Imágenes a eliminar: #{images_to_delete}"
 
     images_to_delete.each do |image_id|
       @product.images.find(image_id).purge
@@ -75,7 +79,6 @@ class ProductsController < ApplicationController
   end
 
   def delete_image
-    logger.debug "Parámetros recibidos: #{params}"
     @product = Product.find(params[:id])
     @image = @product.images.find(params[:image_id])
     if @image

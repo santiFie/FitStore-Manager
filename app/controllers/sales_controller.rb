@@ -3,15 +3,18 @@ class SalesController < ApplicationController
 
   # GET /sales or /sales.json
   def index
+    authorize! :read, Sale
     @sales = Sale.all.filter { |sale| sale.canceled == false }
   end
 
   # GET /sales/1 or /sales/1.json
   def show
+    authorize! :read, Sale
   end
 
   # GET /sales/new
   def new
+    authorize! :create, Sale
     @sale = Sale.new
     @sale.build_client  # Crea un cliente vacío para el formulario
     @sale.prepare_sale_items # Crea un ítem de venta vacío
@@ -19,38 +22,38 @@ class SalesController < ApplicationController
 
   # GET /sales/1/edit
   def edit
+    authorize! :update, Sale
     @sale = Sale.find(params[:id])
-    Rails.logger.info(@sale.sale_items.inspect)
+    Rails.logger.info("Parámetros recibidor: #{@sale.sale_items.inspect}")
   end
 
 
   def create
+    authorize! :create, Sale
+    Rails.logger.info("Parámetros recibidos: #{create_sale_params.inspect}")
     @sale = Sale.new(create_sale_params)
-    begin
+    Rails.logger.info("Parámetros recibidos: #{create_sale_params.inspect}")
+
+    @sale.user = current_user
+
+    # Configura el cliente antes de validar y guardar
+    @sale.client = Client.find_or_initialize_by(dni: create_sale_params[:client_attributes][:dni])
+    @sale.client.assign_attributes(create_sale_params[:client_attributes])
+
+    if @sale.valid? && @sale.client.valid?
       ActiveRecord::Base.transaction do
-        # Si el cliente es válido, encuentra o crea
-        @client = Client.find_or_initialize_by(dni: create_sale_params[:client_attributes][:dni])
-        @client.assign_attributes(create_sale_params[:client_attributes])
-        @client.save!
-
-        @sale.user = current_user
-        @sale.client_id = @client.id
-
-        # Valida la venta antes de guardar
-        unless @sale.valid?
-          @sale.errors.full_messages.each do |message|
-            Rails.logger.info("Sale Error: #{message}")
-          end
-          raise ActiveRecord::RecordInvalid.new(@sale)
-        end
-
+        @sale.client.save!
+        @sale.client_id = @sale.client.id
         @sale.save!
-
         redirect_to @sale, notice: "Venta creada exitosamente."
       end
-    rescue ActiveRecord::RecordInvalid
+    else
+      # Renderiza el formulario nuevamente con los errores
       render :new, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordInvalid
+    # Captura cualquier error de validación durante la transacción
+    render :new, status: :unprocessable_entity
   end
 
   #  # POST /sales or /sales.json
@@ -72,6 +75,8 @@ class SalesController < ApplicationController
 
   # PATCH/PUT /sales/1 or /sales/1.json
   def update
+    authorize! :update, Sale
+
     if @sale.update(update_sale_params)
       redirect_to @sale, notice: "Venta actualizada correctamente"
     else
@@ -82,6 +87,8 @@ class SalesController < ApplicationController
 
   # DELETE /sales/1 or /sales/1.json
   def destroy
+    authorize! :destroy, Sale
+
     @sale.cancel
     redirect_to sales_path, status: :see_other, notice: "Venta cancelada correctamente"
   end
@@ -89,16 +96,7 @@ class SalesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_sale
-      @sale = Sale.find(params.expect(:id))
-    end
-
-    def update_sale_params
-      params.require(:sale).permit(
-        :sale_date,
-        :total,
-        client_attributes: [ :id, :first_name, :last_name, :email, :birth_date ],
-        sale_items_attributes: [ :id, :product_id, :quantity, :subtotal ]
-      )
+      @sale = Sale.find(params.fetch(:id))
     end
 
     def create_sale_params
@@ -106,6 +104,17 @@ class SalesController < ApplicationController
         :sale_date,
         :total,
         client_attributes: [ :dni, :first_name, :last_name, :email, :birth_date ],
+        sale_items_attributes: [ :id, :product_id, :quantity, :subtotal, :_destroy ]
+      )
+    end
+
+
+    def update_sale_params
+      params.require(:sale).permit(
+        :sale_date,
+        :total,
+        :client_id,  # Añade esto si es necesario
+        client_attributes: [ :id, :dni, :first_name, :last_name, :email, :birth_date ],
         sale_items_attributes: [ :id, :product_id, :quantity, :subtotal, :_destroy ]
       )
     end

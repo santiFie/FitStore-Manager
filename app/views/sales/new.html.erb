@@ -6,7 +6,9 @@
             <h2 class="error-title"><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
             <ul>
                 <% @sale.errors.full_messages.each do |message| %>
-                    <li class="error-message"><%= message %></li>
+                    <% unless message.include?("Client") %>
+                        <li class="error-message"><%= message %></li>
+                    <% end %>
                 <% end %>
             </ul>
         </div>
@@ -19,7 +21,6 @@
                 <%= sale_form.fields_for :client do |client_form| %>
                     <% if @sale.client.errors.any? %>
                         <div id="error_explanation" class="errors-container">
-                            <h2 class="error-title"><%= pluralize(@sale.client.errors.count, "error") %> impidieron que se guardara este cliente:</h2>
                             <ul>
                                 <% @sale.client.errors.full_messages.each do |message| %>
                                     <li class="error-message"><%= message %></li>
@@ -156,7 +157,7 @@
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('turbo:load', function() {
         
         // Variable para llevar el conteo de IDs únicos
         let uniqueIdCounter = 0;
@@ -209,41 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return input;
         }
 
-        // New function to add existing sale items
-        function addExistingSaleItems() {
-            const addedProductsTable = document.getElementById('added_products');
-            const existingRows = addedProductsTable.querySelectorAll('tr[data-item-id]');
-            
-            // Remove the "no products" row if it exists
-            const noProductsRow = document.getElementById('no-products');
-            if (noProductsRow) {
-                noProductsRow.remove();
-            }
-
-            // Process each existing row
-            existingRows.forEach(row => {
-                // Add delete button functionality to existing rows
-                const deleteButton = row.querySelector('.delete-button');
-                deleteButton.addEventListener('click', function() {
-                    row.remove();
-                    updateTotal();
-                    
-                    // Show "no products" message if table is empty
-                    if (addedProductsTable.children.length === 0) {
-                        const noProductsRow = document.createElement('tr');
-                        noProductsRow.id = 'no-products';
-                        noProductsRow.innerHTML = '<td colspan="5" class="text-center">No se han agregado productos</td>';
-                        addedProductsTable.appendChild(noProductsRow);
-                    }
-                });
-            });
-
-            // Update total for existing items
-            updateTotal();
-        }
-
-        // Call the function to add existing sale items
-        addExistingSaleItems();
+        
 
         // Función para formatear números como moneda
         function formatCurrency(number) {

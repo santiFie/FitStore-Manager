@@ -138,13 +138,16 @@
 
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Variable para llevar el conteo de IDs únicos
-        let uniqueIdCounter = 0;
 
+<script>
+
+    document.addEventListener('turbo:load', function() {       
+        // Inicializar contador según los elementos existentes
+        let uniqueIdCounter = document.querySelectorAll('#added_products tr[data-item-id]').length; 
+        
         // Función para generar un ID único incremental
         function generateUniqueId() {
+            console.log("Se incremento el contador de IDs únicos y ahora vale ", uniqueIdCounter+1);
             return uniqueIdCounter++;
         }
 
@@ -161,7 +164,7 @@
         function addExistingSaleItems() {
             // const addedProductsTable = document.getElementById('added_products');
             const existingRows = addedProductsTable.querySelectorAll('tr[data-item-id]');
-            
+                        
             // Eliminar la fila de "no productos" si existe
             const noProductsRow = document.getElementById('no-products');
             if (noProductsRow) {
@@ -170,6 +173,8 @@
 
             // Procesar cada fila existente
             existingRows.forEach(row => {
+            generateUniqueId(); // Incrementar el contador de IDs únicos
+            console.log("Se agrego un producto y hay ", existingRows.length);
             // Agregar funcionalidad de botón eliminar a las filas existentes
             const deleteButton = row.querySelector('.delete-button');
             deleteButton.addEventListener('click', function() {
@@ -284,6 +289,9 @@
                         <button type="button" class="delete-button">Eliminar</button>
                     </td>
                 `;
+
+                console.log("Se agrego un producto y hay ", hiddenFields);
+                console.log("Se agrego un producto y hay ", uniqueId);
 
                 // Agregar evento al botón eliminar
                 const deleteButton = newRow.querySelector('.delete-button');

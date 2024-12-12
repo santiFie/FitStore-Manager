@@ -40,7 +40,7 @@
 
     <div class="form-group">
         <%= form.label :unit_price, "Precio por unidad", class: "form-label" %>
-        <%= form.number_field :unit_price, step: 1, value: 0, min: 0, class: "form-control" %>
+        <%= form.number_field :unit_price, step: 0.01, value: 0, min: 0, class: "form-control" %>
     </div>
 
     <div class="form-group">
@@ -69,7 +69,7 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener('turbo:load', function() {
         let fileInputCount = 1;
         const maxFiles = 5;
         const fileInputsContainer = document.getElementById("file-inputs");
