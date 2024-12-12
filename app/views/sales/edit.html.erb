@@ -95,6 +95,7 @@
                                         <%= existing_item_form.hidden_field :product_id, value: sale_item.product_id %>
                                         <%= existing_item_form.hidden_field :quantity, value: sale_item.quantity %>
                                         <%= existing_item_form.hidden_field :subtotal, value: sale_item.subtotal %>
+                                        <%= existing_item_form.hidden_field :_destroy, value: "false" %>
                                     <% end %>
                                 </td>
                                 <td class="text-center"><%= sale_item.quantity %></td>
@@ -142,14 +143,6 @@
 <script>
 
     document.addEventListener('turbo:load', function() {       
-        // Inicializar contador según los elementos existentes
-        let uniqueIdCounter = document.querySelectorAll('#added_products tr[data-item-id]').length; 
-        
-        // Función para generar un ID único incremental
-        function generateUniqueId() {
-            console.log("Se incremento el contador de IDs únicos y ahora vale ", uniqueIdCounter+1);
-            return uniqueIdCounter++;
-        }
 
         // Selección de elementos del DOM
         const productList = document.getElementById('product_list');
@@ -159,6 +152,15 @@
         const addSaleItemButton = document.querySelector('button.add-item');
         const addedProductsTable = document.getElementById('added_products');
         const saleForm = document.querySelector('form');
+
+        // Inicializar contador según los elementos existentes
+        uniqueIdCounter = document.querySelectorAll('#added_products tr[data-item-id]').length;
+
+        // Función para generar un ID único incremental
+        function generateUniqueId() {
+            console.log("Se incremento el contador de IDs únicos y ahora vale ", uniqueIdCounter+1);
+            return uniqueIdCounter++;
+        }
 
         // Nueva función para agregar elementos de venta existentes
         function addExistingSaleItems() {
@@ -178,7 +180,12 @@
             // Agregar funcionalidad de botón eliminar a las filas existentes
             const deleteButton = row.querySelector('.delete-button');
             deleteButton.addEventListener('click', function() {
-                row.remove();
+                const destroyField = row.querySelector(`input[name*="[_destroy]"]`); // CAMBIO
+                if (destroyField) {
+                    destroyField.value = "true"; // Marcar para eliminar // CAMBIO
+                }
+                row.style.display = "none"; // Ocultar fila en lugar de eliminarla // CAMBIO
+                //row.remove();
                 updateTotal();
                 
                 // Mostrar mensaje de "no productos" si la tabla está vacía
@@ -276,7 +283,8 @@
                 const hiddenFields = [
                     createHiddenInput(`sale[sale_items_attributes][${uniqueId}][product_id]`, productId),
                     createHiddenInput(`sale[sale_items_attributes][${uniqueId}][quantity]`, quantity),
-                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][subtotal]`, subtotal)
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][subtotal]`, subtotal),
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][_destroy]`, "false")
                 ];
 
                 // Estructura de la fila

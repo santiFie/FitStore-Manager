@@ -77,6 +77,7 @@ class SalesController < ApplicationController
   def update
     authorize! :update, Sale
 
+    Rails.logger.info("Parámetros recibidos: #{update_sale_params.inspect}")
     if @sale.update(update_sale_params)
       redirect_to @sale, notice: "Venta actualizada correctamente"
     else
@@ -113,7 +114,6 @@ class SalesController < ApplicationController
       params.require(:sale).permit(
         :sale_date,
         :total,
-        :client_id,  # Añade esto si es necesario
         client_attributes: [ :id, :dni, :first_name, :last_name, :email, :birth_date ],
         sale_items_attributes: [ :id, :product_id, :quantity, :subtotal, :_destroy ]
       )
