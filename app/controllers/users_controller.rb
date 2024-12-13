@@ -1,26 +1,21 @@
 class UsersController < ApplicationController
+  load_and_authorize_resource
   before_action :set_user, only: %i[ show edit update destroy ]
 
   # GET /users
   def index
-    authorize! :read, User
-    @users = User.all
   end
 
   # GET /users/new
   def new
-    authorize! :create, User
-    @user = User.new
   end
 
   # GET /users/1/edit
   def edit
-    authorize! :update, User
   end
 
   # POST /users
   def create
-    authorize! :create, User
     if user_params[:role] == "administrador"
       flash[:alert] = "No puedes crear un usuario con el rol de administrador."
       redirect_to new_user_path and return
@@ -55,21 +50,18 @@ class UsersController < ApplicationController
 
   # DELETE /users/1 or /users/1.json
   def destroy
-    authorize! :destroy, User
-    @user.destroy!
-
     flash[:notice] = "Usuario eliminado correctamente."
     redirect_to users_path, status: :see_other and return
   end
 
   # GET /users/1/block
   def block
-    authorize! :block, User
     @user = User.find(params[:id])
     if @user == current_user
       redirect_to users_path, alert: "No puedes bloquearte a ti mismo."
     end
-      @user.block
+    @user.block
+    Rails.logger.info("Usuario bloqueado correctamente? #{@user.blocked?}")
 
     redirect_to users_path, notice: "Usuario bloqueado correctamente."
   end

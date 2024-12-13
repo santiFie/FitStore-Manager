@@ -21,7 +21,7 @@ class Sale < ApplicationRecord
   def cancel
     update(canceled: true)
     for sale_item in sale_items
-      sale_item.product.increment!(available_stock: sale_item.quantity)
+      sale_item.product.increment(:available_stock, sale_item.quantity)
     end
   end
 
@@ -38,9 +38,9 @@ class Sale < ApplicationRecord
   def sale_date_cannot_be_in_the_future_or_too_old
     if sale_date.present?
       if sale_date > Date.today
-        errors.add(:sale_date, "No puede ser en el futuro")
+        errors.add(:sale_date, "La venta no puede ser en el futuro")
       elsif sale_date < 1.years.ago
-        errors.add(:sale_date, "No puede ser tan antigua")
+        errors.add(:sale_date, "La venta no puede ser tan antigua")
       end
     end
   end

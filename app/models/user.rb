@@ -17,20 +17,16 @@ class User < ApplicationRecord
   end
 
   def block
-    self.blocked = true
-    self.password = Devise.friendly_token(8)
-    self.save
+    update(blocked: true, password: Devise.friendly_token(8))
   end
 
   def unblock
-    self.blocked = false
-    self.password = "password"
-    self.save
+    update(blocked: false, password: "password")
   end
 
-  validates :username, presence: true, uniqueness: { message: "ya ha sido tomado" }
-  validates :email, presence: true, uniqueness: { message: "ya ha sido tomado" }
+  validates :username, presence: true, uniqueness: { message: "Este nombre de usuario ya ha sido tomado" }
+  validates :email, presence: true, uniqueness: { message: "Este mail ya ha sido tomado" }
   validates :role, presence: true
   validates :start_date, presence: true
-  validates :phone, presence: true
+  validates :phone, presence: true, length: { is: 10, message: "El teléfono debe tener 10 números" }
 end

@@ -19,10 +19,10 @@
 <%= form_with model: @product, local: true, class: "product-form shadow p-4 mb-5 bg-white rounded" do |form| %>
     <% if @product.errors.any? %>
         <div id="error_explanation" class="alert alert-danger">
-            <h2><%= pluralize(@product.errors.count, "error") %> prohibieron que se actualice el producto.</h2>
+            <h2> No se pudo editar el producto.</h2>
             <ul>
                 <% @product.errors.full_messages.each do |message| %>
-                    <li><%= message %></li>
+                    <li><%= message.split(' ', 2).last %></li>
                 <% end %>
             </ul>
         </div>
@@ -91,7 +91,7 @@
 <% end %>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener('turbo:load', function() {
         const maxFiles = 5;
         const fileInputsContainer = document.getElementById("file-inputs");
         const addFileInputButton = document.getElementById("add-file-input");
@@ -199,6 +199,7 @@
             width: 100%;
             padding: 0.75rem;
             font-size: 1rem;
+            font-family: Arial, sans-serif;
             line-height: 1.5;
             color: var(--text-color);
             background-color: white;
@@ -273,6 +274,7 @@
             transition: all 0.2s ease-in-out;
             cursor: pointer;
             border: none;
+            text-decoration: none;
     }
 
     .btn-lg {

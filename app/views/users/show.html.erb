@@ -1,6 +1,12 @@
-<p style="color: green"><%= notice %></p>
+<% content_for :title, "Mostrar Usuario" %>
 
 <div>
+  <%= link_to "Volver", users_path, class: "btn btn-secondary btn-md" %>
+</div>
+
+<h1 class="text-center my-4">Mostrar usuario</h1>
+
+<div class="user-details shadow p-4 mb-5 bg-white rounded">
   <p>
     <strong>Nombre de usuario:</strong>
     <%= @user.username %>
@@ -9,23 +15,91 @@
     <strong>Email:</strong>
     <%= @user.email %>
   </p>
-
   <p>
     <strong>Rol:</strong>
     <%= @user.role %>
   </p>
-
   <p>
     <strong>Fecha de inicio:</strong>
     <%= @user.start_date %>
   </p>
-
   <p>
     <strong>Teléfono:</strong>
     <%= @user.phone %>
   </p>
 
-  <%= link_to "Editar usuario", edit_user_path(@user) %> |
-  <%= link_to "Volver", users_path %>
-
+  <div class="text-center">
+    <%= link_to "Editar usuario", edit_user_path(@user), class: "btn btn-primary btn-lg" %>
+  </div>
 </div>
+
+<style>
+  .user-details {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .user-details p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+
+  .user-details strong {
+    font-weight: 600;
+  }
+
+  .btn {
+    display: inline-block;
+    font-weight: 500;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-lg {
+    padding: 0.875rem 2rem;
+    font-size: 1.125rem;
+    border-radius: 8px;
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    margin-top: 1rem;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--secondary-hover);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .my-4 {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+</style>

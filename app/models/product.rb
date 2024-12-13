@@ -37,11 +37,11 @@ class Product < ApplicationRecord
     images.each do |image|
       # Validate the content type
       unless image.blob.content_type.in?([ "image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp" ])
-        errors.add(:images, "deben ser archivos PNG, JPEG, WEBP, JPG o GIF")
+        errors.add(:images, "Las imagenes deben ser archivos PNG, JPEG, WEBP, JPG o GIF")
       end
 
       if image.blob.byte_size > 5.megabytes
-        errors.add(:images, "deben ser menores a 5MB")
+        errors.add(:images, "Las imagenes deben ser menores a 5MB")
       end
     end
   end

@@ -43,7 +43,7 @@
             <%= link_to "Editar", edit_user_path(user), class: "btn btn-primary btn-sm" %>
           <% end %>
           <% if can?(:destroy, user) %>
-            <%= link_to "Eliminar", user, data: { turbo_method: :delete, confirm: "¿Estas seguro?" }, class: "btn btn-danger btn-sm" %>
+            <%= link_to "Eliminar", user, data: { turbo_method: :delete, turbo_confirm: "¿Estas seguro?" }, class: "btn btn-danger btn-sm" %>
           <% end %>
           <% if can?(:block, user.role) %>
             <% if !user.blocked? %>

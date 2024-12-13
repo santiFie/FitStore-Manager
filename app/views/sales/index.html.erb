@@ -12,8 +12,9 @@
         <h3>Total: <%= number_to_currency(sale.total) %></h3>
         
         <div class="sale-actions">
+          <%= link_to "Ver venta", sale, class: "edit-button"%>
           <%= link_to "Editar venta", edit_sale_path(sale), class: "edit-button" %>
-          <%= link_to "Cancelar venta", sale_path(sale), data: { turbo_method: :delete, confirm: "¿Estás seguro?" }, class: "delete-button" %>
+          <%= link_to "Cancelar venta", sale_path(sale), data: { turbo_method: :delete, turbo_confirm: "¿Estás seguro?" }, class: "delete-button" %>
         </div>
       </div>
     <% end %>

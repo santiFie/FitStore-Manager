@@ -4,6 +4,8 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
+    cannot :manage, :all
+
     can :read, Product # Allow anyone to read products
 
     return unless user.present?
@@ -35,7 +37,6 @@ class Ability
       can :manage, Product
       can :manage, Category
       can :manage, Sale
-      cannot :manage, User
     end
   end
 end

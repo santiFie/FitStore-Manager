@@ -30,9 +30,7 @@ class SalesController < ApplicationController
 
   def create
     authorize! :create, Sale
-    Rails.logger.info("Parámetros recibidos: #{create_sale_params.inspect}")
     @sale = Sale.new(create_sale_params)
-    Rails.logger.info("Parámetros recibidos: #{create_sale_params.inspect}")
 
     @sale.user = current_user
 
