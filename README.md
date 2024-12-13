@@ -20,7 +20,7 @@ Para la búsqueda y filtrado de productos se usó la gema `ransack`. Para más i
 
 1. Clonar el repositorio:
     ```sh
-    git clone 
+    git clone https://github.com/santiFie/FitStore-Manager.git
     cd store-proyect
     ```
 
