@@ -1,20 +1,21 @@
 class SalesController < ApplicationController
+  load_and_authorize_resource except: :create
   before_action :set_sale, only: %i[ show edit update destroy ]
 
   # GET /sales or /sales.json
   def index
-    authorize! :read, Sale
+    # authorize! :read, Sale
     @sales = Sale.all.filter { |sale| sale.canceled == false }
   end
 
   # GET /sales/1 or /sales/1.json
   def show
-    authorize! :read, Sale
+    # authorize! :read, Sale
   end
 
   # GET /sales/new
   def new
-    authorize! :create, Sale
+    # authorize! :create, Sale
     @sale = Sale.new
     @sale.build_client  # Crea un cliente vacío para el formulario
     @sale.prepare_sale_items # Crea un ítem de venta vacío
@@ -22,9 +23,9 @@ class SalesController < ApplicationController
 
   # GET /sales/1/edit
   def edit
-    authorize! :update, Sale
-    @sale = Sale.find(params[:id])
-    Rails.logger.info("Parámetros recibidor: #{@sale.sale_items.inspect}")
+    # authorize! :update, Sale
+    # @sale = Sale.find(params[:id])
+    # Rails.logger.info("Parámetros recibidor: #{@sale.sale_items.inspect}")
   end
 
 
@@ -73,7 +74,7 @@ class SalesController < ApplicationController
 
   # PATCH/PUT /sales/1 or /sales/1.json
   def update
-    authorize! :update, Sale
+    # authorize! :update, Sale
 
     Rails.logger.info("Parámetros recibidos: #{update_sale_params.inspect}")
     if @sale.update(update_sale_params)
@@ -86,7 +87,7 @@ class SalesController < ApplicationController
 
   # DELETE /sales/1 or /sales/1.json
   def destroy
-    authorize! :destroy, Sale
+    # authorize! :destroy, Sale
 
     @sale.cancel
     redirect_to sales_path, status: :see_other, notice: "Venta cancelada correctamente"

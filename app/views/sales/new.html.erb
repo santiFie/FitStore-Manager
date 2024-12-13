@@ -7,7 +7,7 @@
             <ul>
                 <% @sale.errors.full_messages.each do |message| %>
                     <% unless message.include?("Client") %>
-                        <li class="error-message"><%= message %></li>
+                        <li class="error-message"><%= message.split(' ').drop(1).join(' ') %></li>
                     <% end %>
                 <% end %>
             </ul>
@@ -157,10 +157,9 @@
 
 
 <script>
+    // Variable para llevar el conteo de IDs únicos
+let uniqueIdCounter = 0;
 document.addEventListener('turbo:load', function() {
-        
-        // Variable para llevar el conteo de IDs únicos
-        let uniqueIdCounter = 0;
 
         // Función para generar un ID único incremental
         function generateUniqueId() {
@@ -225,7 +224,7 @@ document.addEventListener('turbo:load', function() {
         quantityInput.addEventListener('input', updateSubtotal);
 
         // Evento para botón de agregar producto
-        addSaleItemButton.addEventListener('click', function(event) {
+        addSaleItemButton.onclick = function(event) {
             event.preventDefault();
 
             const selectedOption = Array.from(productList.options)
@@ -250,17 +249,14 @@ document.addEventListener('turbo:load', function() {
                 // Crear nueva fila
                 const newRow = document.createElement('tr');
                 newRow.dataset.itemId = uniqueId;
-                
-                // Crear campos ocultos
-                const hiddenFields = [
-                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][product_id]`, productId),
-                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][quantity]`, quantity),
-                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][subtotal]`, subtotal)
-                ];
+                newRow.dataset.productId = productId;  // Agregar el data-product-id
 
-                // Estructura de la fila
+                // Crear campos ocultos y agregarlos directamente al DOM
+                hiddenFields.forEach(input => newRow.appendChild(input));
+
+                // Estructura de la fila con los campos ocultos ya agregados
                 newRow.innerHTML = `
-                    <td>${productName}${hiddenFields.map(input => input.outerHTML).join('')}</td>
+                    <td>${productName}</td>
                     <td class="text-center">${quantity}</td>
                     <td class="text-right">${formatCurrency(unitPrice)}</td>
                     <td class="text-right" data-subtotal="${subtotal}">${formatCurrency(subtotal)}</td>

@@ -3,10 +3,10 @@
     
     <% if @sale.errors.any? %>
       <div id="error_explanation">
-        <h2><%= pluralize(@sale.errors.count, "error") %> impidieron que se guardara esta venta:</h2>
+        <h2>No se pudo editar la venta:</h2>
         <ul>
           <% @sale.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
+            <li><%= message.split(' ').drop(1).join(' ') %></li>
           <% end %>
         </ul>
       </div>

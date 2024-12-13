@@ -1,9 +1,12 @@
 class ProductsController < ApplicationController
   load_and_authorize_resource
   def index
-    # authorize! :read, Product
     @q = Product.ransack(params[:q])
-    @products = @q.result(distinct: true).filter { |product| product.available_stock > 0 }
+    if current_user.administrador?
+      @products = @q.result(distinct: true)
+    else
+      @products = @q.result(distinct: true).filter { |product| product.available_stock > 0 }
+    end
   end
 
   def new

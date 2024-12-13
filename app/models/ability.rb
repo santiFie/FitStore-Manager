@@ -17,6 +17,13 @@ class Ability
     if user.supervisor?
       can :manage, Category
       can :manage, Sale
+      can :manage, Product
+      can :create, Client
+      can :update, Client
+      can :destroy, Client
+      can :create, SaleItem
+      can :update, SaleItem
+      can :destroy, SaleItem
       can :create, User, role: "supervisor"
       can :update, User do |u|
       !u.administrador?
@@ -37,6 +44,12 @@ class Ability
       can :manage, Product
       can :manage, Category
       can :manage, Sale
+      can :create, Client
+      can :update, Client
+      can :destroy, Client
+      can :create, SaleItem
+      can :update, SaleItem
+      can :destroy, SaleItem
     end
   end
 end

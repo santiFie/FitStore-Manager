@@ -9,7 +9,7 @@ class Sale < ApplicationRecord
   validates_associated :client
 
   accepts_nested_attributes_for :sale_items, allow_destroy: true, reject_if: lambda { |attributes| attributes["product_id"].blank? }
-  accepts_nested_attributes_for :client, reject_if: lambda { |attributes| attributes["client_id"].blank? }
+  accepts_nested_attributes_for :client
 
   validate :validate_sale_items
   validate :enough_stock
