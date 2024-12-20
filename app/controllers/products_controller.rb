@@ -2,10 +2,13 @@ class ProductsController < ApplicationController
   load_and_authorize_resource
   def index
     @q = Product.ransack(params[:q])
-    if current_user.administrador?
+    if current_user&.administrador?
       @products = @q.result(distinct: true)
+              .paginate(page: params[:page], per_page: 5)
     else
-      @products = @q.result(distinct: true).filter { |product| product.available_stock > 0 }
+      @products = @q.result(distinct: true)
+             .where("available_stock > 0")
+             .paginate(page: params[:page], per_page: 5)
     end
   end
 

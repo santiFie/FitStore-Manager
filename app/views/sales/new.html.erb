@@ -158,8 +158,8 @@
 
 <script>
     // Variable para llevar el conteo de IDs únicos
-let uniqueIdCounter = 0;
-document.addEventListener('turbo:load', function() {
+    let uniqueIdCounter = 0;
+    document.addEventListener('turbo:load', function() {
 
         // Función para generar un ID único incremental
         function generateUniqueId() {
@@ -209,13 +209,11 @@ document.addEventListener('turbo:load', function() {
             return input;
         }
 
-        
-
         // Función para formatear números como moneda
         function formatCurrency(number) {
             return new Intl.NumberFormat('es-AR', {
-            style: 'currency',
-            currency: 'ARS'
+                style: 'currency',
+                currency: 'ARS'
             }).format(number);
         }
 
@@ -252,6 +250,11 @@ document.addEventListener('turbo:load', function() {
                 newRow.dataset.productId = productId;  // Agregar el data-product-id
 
                 // Crear campos ocultos y agregarlos directamente al DOM
+                const hiddenFields = [
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][product_id]`, productId),
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][quantity]`, quantity),
+                    createHiddenInput(`sale[sale_items_attributes][${uniqueId}][subtotal]`, subtotal)
+                ];
                 hiddenFields.forEach(input => newRow.appendChild(input));
 
                 // Estructura de la fila con los campos ocultos ya agregados
@@ -290,8 +293,7 @@ document.addEventListener('turbo:load', function() {
                 
                 updateTotal();
             }
-        });
-
+        };
     });
 </script>
 
@@ -322,7 +324,7 @@ document.addEventListener('turbo:load', function() {
     .form-label {
         display: block;
         margin-bottom: 5px;
-        font-font-family: Arial, sans-serif;
+        font-family: Arial, sans-serif;
     }
 
     .form-input {
