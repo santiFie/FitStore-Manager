@@ -4,52 +4,42 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
+    # Por defecto, nadie puede hacer nada
     cannot :manage, :all
 
-    can :read, Product # Allow anyone to read products
+    # Permisos básicos para todos (incluso usuarios no logueados)
+    can :read, Product
 
+    # Retornar si no hay usuario logueado
     return unless user.present?
 
     if user.administrador?
       can :manage, :all
-    end
+    elsif user.supervisor?
+      # Permisos de supervisor
+      can :manage, [ Category, Sale, Product, SaleItem ]
+      can [ :create, :update, :destroy ], Client
 
-    if user.supervisor?
-      can :manage, Category
-      can :manage, Sale
-      can :manage, Product
-      can :create, Client
-      can :update, Client
-      can :destroy, Client
-      can :create, SaleItem
-      can :update, SaleItem
-      can :destroy, SaleItem
-      can :create, User, role: "supervisor"
-      can :update, User do |u|
-      !u.administrador?
-      end
-      can :destroy, User do |u|
-      !u.administrador?
-      end
-      can :block, User do |u|
-      !u.administrador?
-      end
-      can :unblock, User do |u|
-      !u.administrador?
-      end
+      # Permisos específicos para User
       can :read, User
-    end
+      can :create, User, role: "supervisor"
 
-    if user.empleado?
-      can :manage, Product
-      can :manage, Category
-      can :manage, Sale
-      can :create, Client
-      can :update, Client
-      can :destroy, Client
-      can :create, SaleItem
-      can :update, SaleItem
-      can :destroy, SaleItem
+      # Puede editar/actualizar usuarios que no sean administradores o a sí mismo
+      can [ :edit, :update ], User do |u|
+        u.id == user.id || !u.administrador?
+      end
+
+      # Puede realizar acciones sobre usuarios que no sean administradores
+      can [ :destroy, :block, :unblock ], User do |u|
+        !u.administrador?
+      end
+    elsif user.empleado?
+      # Permisos de empleado
+      can :manage, [ Product, Category, Sale ]
+      can [ :create, :update, :destroy ], [ Client, SaleItem ]
+
+      # Un empleado puede editar su propio perfil
+      can [ :edit, :update ], User, id: user.id
     end
   end
 end

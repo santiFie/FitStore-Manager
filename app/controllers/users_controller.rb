@@ -35,16 +35,23 @@ class UsersController < ApplicationController
     authorize! :update, User
 
     if @user.role == "administrador" && current_user.role != "administrador"
-      Rails.logger.info("Rol del usuario: #{@user[:role]}")
-      Rails.logger.info("Rol del usuario a cambiar: #{current_user.role}")
       redirect_to users_path, alert: "No puedes cambiar el rol de un usuario administrador." and return
     end
 
-    if @user.update(user_params)
+    if @user == current_user
+      if @user.update(user_params.except(:role))
+      flash[:notice] = "Usuario actualizado correctamente"
+      redirect_to products_path
+      else
+      render :edit, status: :unprocessable_entity
+      end
+    else
+      if @user.update(user_params)
       flash[:notice] = "Usuario actualizado correctamente."
       redirect_to users_path
-    else
+      else
       render :edit, status: :unprocessable_entity
+      end
     end
   end
 
